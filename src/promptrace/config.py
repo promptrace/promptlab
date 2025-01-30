@@ -1,5 +1,7 @@
+from enum import Enum
 from pydantic import BaseModel, HttpUrl
 from typing import List
+from promptrace.enums import TracerType
 
 class ModelConfig(BaseModel):
     type: str
@@ -11,16 +13,18 @@ class ModelConfig(BaseModel):
 class EvaluationConfig(BaseModel):
     metric: str
 
-class TracerConfig(BaseModel):
-    type: str
-    target: str
-
 class ExperimentConfig(BaseModel):
     model: ModelConfig
     prompt_template: str
     dataset: str
     evaluation: List[EvaluationConfig]
-    tracer: TracerConfig
 
     class Config:
         extra = "forbid" 
+
+class TracerConfig(BaseModel):
+    type: TracerType  
+    target: str
+
+    class Config:
+        use_enum_values = True 

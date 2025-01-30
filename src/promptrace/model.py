@@ -3,7 +3,14 @@ from openai import AzureOpenAI
 from openai import OpenAI
 import requests
 from promptrace.config import ModelConfig
-from promptrace.parser import Experiment
+from dataclasses import dataclass
+from promptrace.enums import ModelType
+
+@dataclass
+class InferenceResult:
+    inference: str
+    prompt_tokens: int
+    completion_tokens: int
 
 class _AzureOpenAI:
     def __init__(self, api_key, api_version, endpoint, deployment):
@@ -13,63 +20,69 @@ class _AzureOpenAI:
             api_version=api_version,
             azure_endpoint=str(endpoint)
         )
+        
+    def invoke(self, system_prompt: str, user_prompt: str):
+        payload = [
+            {
+                "role": "system",
+                "content": system_prompt
+            },
+            {
+                "role": "user",
+                "content": user_prompt
+            }
+        ]
+        chat_completion = self.client.chat.completions.create(
+            model=self.deployment, 
+            messages=payload
+        )
+        inference = chat_completion.choices[0].message.content
+        prompt_token = chat_completion.usage.prompt_tokens
+        completion_token = chat_completion.usage.completion_tokens
 
-    def invoke(self, experiment: Experiment):
-        for prompt in experiment.prompts:
-            payload = [
-                {
-                    "role": "system",
-                    "content": prompt.system
-                },
-                {
-                    "role": "user",
-                    "content": prompt.user
-                }
-            ]
-            chat_completion = self.client.chat.completions.create(
-                model=self.deployment, 
-                messages=payload
-            )
-            prompt.inference = chat_completion.choices[0].message.content
-            prompt.prompt_token = chat_completion.usage.prompt_tokens
-            prompt.completion_token = chat_completion.usage.completion_tokens
-
-        return experiment
-    
+        return InferenceResult(
+            inference=inference,
+            prompt_tokens=prompt_token,
+            completion_tokens=completion_token
+        )
+       
 class DeepSeek:
     def __init__(self, api_key, endpoint, deployment):
         self.deployment = deployment
         self.client = OpenAI(api_key=api_key, base_url=str(endpoint))
 
-    def invoke(self, experiment: Experiment):
-        for prompt in experiment.prompts:
-            payload = [
-                {
-                    "role": "system",
-                    "content": prompt.system
-                },
-                {
-                    "role": "user",
-                    "content": prompt.user
-                }
-            ]
-            chat_completion = self.client.chat.completions.create(
-                model=self.deployment, 
-                messages=payload
-            )
-            prompt.inference = chat_completion.choices[0].message.content
-            prompt.prompt_token = chat_completion.usage.prompt_tokens
-            prompt.completion_token = chat_completion.usage.completion_tokens
+    def invoke(self, system_prompt: str, user_prompt: str):
+        payload = [
+            {
+                "role": "system",
+                "content": system_prompt
+            },
+            {
+                "role": "user",
+                "content": user_prompt
+            }
+        ]
+        chat_completion = self.client.chat.completions.create(
+            model=self.deployment, 
+            messages=payload
+        )
+        inference = chat_completion.choices[0].message.content
+        prompt_token = chat_completion.usage.prompt_tokens
+        completion_token = chat_completion.usage.completion_tokens
 
-        return experiment
+        return InferenceResult(
+            inference=inference,
+            prompt_tokens=prompt_token,
+            completion_tokens=completion_token
+        )
     
 class ModelFactory:
     @staticmethod
     def get_model(model_config: ModelConfig):
         connection_type = model_config.type
-        if connection_type == "azure_openai":
+        if connection_type == ModelType.AZURE_OPENAI.value:
             return _AzureOpenAI(model_config.api_key, model_config.api_version, model_config.endpoint, model_config.deployment)
-        if connection_type == "deepseek":
+        if connection_type == ModelType.DEEPSEEK.value:
             return DeepSeek(model_config.api_key, model_config.endpoint, model_config.deployment)
         else:
             raise ValueError(f"Unknown connection type: {connection_type}")
@@ -78,5 +91,5 @@ class Model:
     def __init__(self, model_config: ModelConfig):
         self.model = ModelFactory.get_model(model_config)
 
-    def invoke(self, experiment):
-        return self.model.invoke(experiment)
+    def invoke(self, system_prompt: str, user_prompt: str):
+        return self.model.invoke(system_prompt, user_prompt)

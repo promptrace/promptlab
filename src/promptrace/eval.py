@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from promptrace.parser import Prompt
+from promptrace.enums import EvaluationMetric
 
 class Evaluation(ABC):
     @abstractmethod
@@ -7,22 +7,23 @@ class Evaluation(ABC):
         pass
 
 class IsNumericEvaluator(Evaluation):
-    def evaluate(self, data: Prompt):
+    def evaluate(self, data: str):
         val = False
-        if isinstance(data.inference, (int, float)):
+        if isinstance(data, (int, float)):
             val = True
-        elif isinstance(data.inference, str):
+        elif isinstance(data, str):
             try:
-                float(data.inference)
+                float(data)
                 val = True
             except ValueError:
                 pass
-        data.evaluation_result = {'is_numeric': val}
+        
+        return val
 
 class EvaluationFactory:
     @staticmethod
     def get_evaluator(strategy: str) -> Evaluation:
-        if strategy == 'is_numeric':
+        if strategy == EvaluationMetric.IS_NUMERIC.value:
             return IsNumericEvaluator()
         else:
             raise ValueError(f"Unknown evaluation strategy: {strategy}")
