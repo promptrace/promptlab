@@ -12,15 +12,15 @@ if __name__ == "__main__":
                         "endpoint": "",
                         "deployment": "gpt-4o"
                 },
-                "prompt_template": "C:\work\promptrace\test\prompt_template\mountain_height_v1.prompt",
-                "dataset": "C:\work\promptrace\test\dataset\mountain_dataset.jsonl",
+                "prompt_template": "",
+                "dataset": "",
                 "evaluation": [
                         {'metric': 'is_numeric'}
                 ],    
         }
     tracer = {
         "type": "file",
-        "target": "C:\work\promptrace\test\trace_target"
+        "target": ""
     }
     prompt_trace = PrompTrace(tracer)
     prompt_trace.run(test_experiments)
