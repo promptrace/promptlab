@@ -11,7 +11,8 @@ class Prompt:
 
     def __post_init__(self):
         try:
-            with open((self.prompt_template), 'r', encoding='utf-8') as file:
+            prompt_template = self.prompt_template.replace("\t", "\\t")
+            with open((prompt_template), 'r', encoding='utf-8') as file:
                 prompt_content = file.read()
 
             pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'    

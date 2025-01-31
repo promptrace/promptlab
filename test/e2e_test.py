@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from promptrace.core import PrompTrace
+from promptrace import PrompTrace
 
 if __name__ == "__main__":
     test_experiments = {
@@ -12,15 +12,15 @@ if __name__ == "__main__":
                         "endpoint": "",
                         "deployment": "gpt-4o"
                 },
-                "prompt_template": r"C:\work\promptrace\test\prompt_template\mountain_height_v1.prompt",
-                "dataset": r"C:\work\promptrace\test\dataset\mountain_dataset.jsonl",
+                "prompt_template": "C:\work\promptrace\test\prompt_template\mountain_height_v1.prompt",
+                "dataset": "C:\work\promptrace\test\dataset\mountain_dataset.jsonl",
                 "evaluation": [
                         {'metric': 'is_numeric'}
                 ],    
         }
     tracer = {
         "type": "file",
-        "target": r"C:\work\promptrace\test\trace_target"
+        "target": "C:\work\promptrace\test\trace_target"
     }
     prompt_trace = PrompTrace(tracer)
     prompt_trace.run(test_experiments)

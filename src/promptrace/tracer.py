@@ -16,8 +16,9 @@ class Tracer(ABC):
 
 class FileTracer(Tracer):
     def trace(self, experiment, evaluations: list[EvaluationConfig]):
+        trace_target = self.trace_target.replace("\t", "\\t")
         file_name = datetime.now().strftime("run.%Y%m%d.%H%M%S.txt")
-        file_path = os.path.join(self.trace_target, file_name)
+        file_path = os.path.join(trace_target, file_name)
 
         with open(file_path, 'w', newline='') as file:
             writer = csv.writer(file, delimiter='\t')

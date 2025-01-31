@@ -10,6 +10,7 @@ class Experiment:
         self.experiment_config = experiment_config
 
     def load_dataset(self, dataset_path: str) -> List[Dict]:
+        dataset_path = dataset_path.replace("\t", "\\t")
         with open(dataset_path, 'r') as file:
             dataset = file.read()
         return json.loads(dataset)
