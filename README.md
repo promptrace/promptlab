@@ -1,3 +1,7 @@
+<h4 align="center">
+    <img alt="logo" src="src/img/banner.png" style="width: 100%;">
+</h4>
+
 ## PrompTrace
 
 From building and tracking experiments to productionizing prompts.

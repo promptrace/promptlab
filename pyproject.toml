@@ -7,7 +7,7 @@ name = "promptrace"
 version = "0.1.3"
 description = "A tool for prompt experimentation and collaboration without additional cloud service."
 readme = "README.md"
-authors = [{name = "Raihan Alam", email = ""}]
+authors = [{name = "Raihan Alam", email = "raihan.alam@gmail.com"}]
 license = {file = "LICENSE"}
 classifiers = [
     "Programming Language :: Python :: 3",
