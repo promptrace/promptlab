@@ -47,38 +47,15 @@ class SQLiteTracer(Tracer):
                         system_prompt_template TEXT NOT NULL,
                         user_prompt_template TEXT NOT NULL,                               
                         dataset_path TEXT NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                
-                # Create results table
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS batch_run (
-                        batch_run_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        experiment_id TEXT NOT NULL,
-                        record_id TEXT NOT NULL,
-                        system_prompt TEXT NOT NULL,
-                        user_prompt TEXT NOT NULL,   
+                        dataset_record_id TEXT NOT NULL,
                         output TEXT NOT NULL,
                         prompt_tokens INTEGER,
                         completion_tokens INTEGER,
-                        duration_ms REAL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (experiment_id) REFERENCES experiments(experiment_id)
+                        latency_ms REAL,
+                        eval blob,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
-                
-                # Create evaluations table
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS evaluation (
-                        evaluation_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        batch_run_id INTEGER NOT NULL,
-                        metric_name TEXT NOT NULL,
-                        metric_value REAL NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (batch_run_id) REFERENCES batch_run(batch_run_id)
-                    )
-                """)        
+                """)                     
                 
                 conn.commit()
                 logger.info(f"Initialized SQLite database at {self.db_path}")

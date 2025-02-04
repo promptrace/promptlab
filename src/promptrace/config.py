@@ -28,3 +28,18 @@ class TracerConfig(BaseModel):
 
     class Config:
         use_enum_values = True 
+
+class ConfigValidator:
+    @staticmethod
+    def validate_tracer_config(tracer: dict) -> TracerConfig:
+        try:
+            return TracerConfig(**tracer)
+        except Exception as e:
+            raise ValueError(f"Invalid tracer configuration: {str(e)}")
+
+    @staticmethod
+    def validate_experiment_config(experiment_config: dict) -> ExperimentConfig:
+        try:
+            return ExperimentConfig(**experiment_config)
+        except Exception as e:
+            raise ValueError(f"Invalid experiment configuration: {str(e)}")

@@ -2,13 +2,13 @@ import json
 import os
 import sys
 from promptrace import PrompTrace
-from web.api import PromptTraceAPI
+from promptrace.serving.api import PromptTraceAPI
 
 if __name__ == "__main__":
     test_experiments = {
                 "model" : {
                         "type": "azure_openai",
-                        "api_key": "", 
+                        "api_key": "574499b10fea4553ad7a103db3065e4d", 
                         "api_version": "2024-10-21", 
                         "endpoint": "https://reteval4254999170.openai.azure.com",
                         "deployment": "gpt-4o"
@@ -26,5 +26,4 @@ if __name__ == "__main__":
     prompt_trace = PrompTrace(tracer)
     # prompt_trace.run(test_experiments)
     prompt_trace.start_web_server("C:\work\promptrace\test\trace_target", 8000)
-#     api = PromptTraceAPI('C:\work\promptrace\test\trace_target\promptrace.db')
-#     api.run()
+
