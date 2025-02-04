@@ -2,7 +2,7 @@ from enum import Enum
 
 class TracerType(Enum):
     FILE = "file"
-    DATABASE = "database"
+    SQLITE = "sqlite"
     CONSOLE = "console"
 
 class ModelType(Enum):

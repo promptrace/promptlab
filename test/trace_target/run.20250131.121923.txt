@@ -1,9 +1,0 @@
-exp_id	model_type	model	prompt_template	user_prompt	system_prompt	dataset	inference	prompt_token	completion_token	is_numeric
-dce89357-bc36-4e31-bc61-f63408a24ef6	azure_openai	gpt-4o	"C:\work\promptrace	est\prompt_template\mountain_height_v1.prompt"	"Here is some information about a mountain. 
-<Mount Everest - 8,848.86 m (29,031.7 ft) The highest mountain in the world, located in the Himalayas on the border between Nepal and China.>
-
-What's the height of the mountain? Reply only in number and in meter."	You are a helpful assitant who can extract information from s given text.	"C:\work\promptrace	est\dataset\mountain_dataset.jsonl"	8848.86	90	4	False
-dce89357-bc36-4e31-bc61-f63408a24ef6	azure_openai	gpt-4o	"C:\work\promptrace	est\prompt_template\mountain_height_v1.prompt"	"Here is some information about a mountain. 
-<K2 (Mount Godwin-Austen) - 8,611 m (28,251 ft) The second-highest mountain, located in the Karakoram range, straddling Pakistan and China.>
-
-What's the height of the mountain? Reply only in number and in meter."	You are a helpful assitant who can extract information from s given text.	"C:\work\promptrace	est\dataset\mountain_dataset.jsonl"	8611	93	2	False

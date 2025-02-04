@@ -1,19 +1,14 @@
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
-import uuid
-import json
-from pathlib import Path
-
-from openai import AzureOpenAI
-
-from promptrace.eval import EvaluationFactory
 from promptrace.experiment import Experiment
 from promptrace.model import Model
 from promptrace.prompt import Prompt
-from promptrace.tracer import TracerFactory
 from promptrace.config import ExperimentConfig, TracerConfig
+from promptrace.tracers.tracer_factory import TracerFactory
 import os
-from pydantic import BaseModel, HttpUrl
 from typing import List, Dict, Any
+
+from web.api import PromptTraceAPI
     
 class PrompTrace:
     def __init__(self, tracer: dict):
@@ -43,3 +38,23 @@ class PrompTrace:
         tracer = TracerFactory.get_tracer(self.tracer.type, self.tracer.target)
         tracer.trace(run_result, self.experiment_config.evaluation)
         
+    def start_web_server(self, html_path: str, port: int = 8000):
+        """Start the web server and API"""
+        html_path = html_path.replace("\t", "\\t")
+        os.chdir(html_path)
+        
+        # Initialize API
+        api = PromptTraceAPI(self.tracer.target+'/promptrace.db')
+        
+        # Start API in a separate thread
+        import threading
+        api_thread = threading.Thread(target=api.run, args=("localhost", port+1))
+        api_thread.daemon = True
+        api_thread.start()
+        
+        # Start HTTP server for static files
+        handler = SimpleHTTPRequestHandler
+        httpd = HTTPServer(("localhost", port), handler)
+        print(f"Serving HTTP on localhost port {port} (http://localhost:{port}/) ...")
+        print(f"API running on port {port+1}")
+        httpd.serve_forever()

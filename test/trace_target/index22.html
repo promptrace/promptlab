@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptTrace</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>PromptTrace Dashboard</h1>
+    <table id="csvTable">
+        <thead>
+            <tr>
+                <th>exp_id</th>
+                <th>model_type</th>
+                <th>model</th>
+                <th>prompt_template</th>
+                <th>user_prompt</th>
+                <th>system_prompt</th>
+                <th>dataset</th>
+                <th>inference</th>
+                <th>prompt_token</th>
+                <th>completion_token</th>
+                <th>is_numeric</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        function onPageLoad() {
+            const csvFilePath = 'run.20250203.125829.txt'; // Path to the CSV file
+            fetch(csvFilePath)
+                .then(response => response.text())
+                .then(text => {
+                    console.log('text:', text);
+
+                    const rows = text.split('\n').slice(1); // Skip header row
+                    const tableBody = document.getElementById('csvTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = ''; // Clear existing table rows
+
+                    rows.forEach(row => {
+                        const cols = row.split('|'); // Assuming tab-separated values
+                        console.log('row:', row);
+
+                        if (cols.length === 11) {
+                            const tr = document.createElement('tr');
+                            cols.forEach(col => {
+                                const td = document.createElement('td');
+                                td.textContent = col;
+                                tr.appendChild(td);
+                            });
+                            tableBody.appendChild(tr);
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading CSV file:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', onPageLoad);
+    </script>
+</body>
+</html>

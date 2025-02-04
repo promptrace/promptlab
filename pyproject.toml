@@ -25,5 +25,8 @@ requires-python = ">=3.8"
 Homepage = "https://github.com/promptrace/promptrace"
 Issues = "https://github.com/promptrace/promptrace/issues"
 
-[tool.setuptools]
-package-dir = {"" = "src"} 
+[tool.setuptools.package-data]
+promptrace = ["web/*.html"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
