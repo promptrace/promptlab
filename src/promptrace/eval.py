@@ -19,11 +19,18 @@ class IsNumericEvaluator(Evaluation):
                 pass
         
         return val
+    
+class LengthEvaluator(Evaluation):
+    def evaluate(self, data: str):
+       
+        return len(str(data))
 
 class EvaluationFactory:
     @staticmethod
     def get_evaluator(strategy: str) -> Evaluation:
         if strategy == EvaluationMetric.IS_NUMERIC.value:
             return IsNumericEvaluator()
+        if strategy == EvaluationMetric.LENGTH.value:
+            return LengthEvaluator()
         else:
             raise ValueError(f"Unknown evaluation strategy: {strategy}")

@@ -21,23 +21,41 @@ class Experiment:
         for item in dataset:
             system_prompt, user_prompt = prompt.prepare_prompts(item)
             inference_result = model.invoke(system_prompt, user_prompt)
-            evaluations = self.evaluate_prompts(prompt)
-            run_result.append([
-                self.experiment_config.model.type,
-                self.experiment_config.model.deployment,
-                self.experiment_config.prompt_template,
-                user_prompt,
-                system_prompt,
-                self.experiment_config.dataset,
-                inference_result.inference,
-                inference_result.prompt_tokens,
-                inference_result.completion_tokens,
-                *evaluations
-            ])
+            evaluation = self.evaluate_prompts(prompt)
+
+            res = dict()
+            res["model_type"] = self.experiment_config.model.type
+            res["model_type"] = self.experiment_config.model.type
+            res["model_api_version"] = self.experiment_config.model.api_version
+            res["model_endpoint"] = self.experiment_config.model.endpoint.unicode_string()
+            res["model_deployment"] = self.experiment_config.model.deployment
+            res["prompt_template"] = self.experiment_config.prompt_template
+            res["user_prompt"] = user_prompt
+            res["system_prompt"] = system_prompt
+            res["dataset"] = self.experiment_config.dataset
+            res["dataset_record_id"] = self.get_id(item)
+            res["inference"] = inference_result.inference
+            res["prompt_tokens"] = inference_result.prompt_tokens
+            res["completion_tokens"] = inference_result.completion_tokens
+            res["latency_ms"] = '-'
+            res["eval"] = evaluation
+            
+            run_result.append(res)
         return run_result
 
-    def evaluate_prompts(self, prompt: Prompt) -> List:
-        return [
-            EvaluationFactory.get_evaluator(eval.metric).evaluate(prompt)
-            for eval in self.experiment_config.evaluation
-        ]
+    def get_id(self, item):
+        for item_part in item:
+            if item_part["title"] == "id":
+                return item_part["value"]
+        return None
+        
+    def evaluate_prompts(self, prompt: Prompt) -> str:
+        evaluations = []
+        for eval_config in self.experiment_config.evaluation:
+            evaluator = EvaluationFactory.get_evaluator(eval_config.metric)
+            evaluation_result = evaluator.evaluate(prompt)
+            evaluations.append({
+                "metric": eval_config.metric,
+                "result": evaluation_result
+            })
+        return json.dumps(evaluations)

@@ -37,7 +37,7 @@ class PrompTrace:
         run_result = experiment.run(model, prompt)
 
         tracer = TracerFactory.get_tracer(self.tracer.type, self.tracer.target)
-        tracer.trace(run_result, self.experiment_config.evaluation)
+        tracer.trace(run_result)
 
     def start_web_server(self, db_dir: str, port: int = 8000):
         server = _Server()

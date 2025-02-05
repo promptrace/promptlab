@@ -16,7 +16,8 @@ if __name__ == "__main__":
                 "prompt_template": "C:\work\promptrace\test\prompt_template\mountain_height_v1.prompt",
                 "dataset": "C:\work\promptrace\test\dataset\mountain_dataset.jsonl",
                 "evaluation": [
-                        {'metric': 'is_numeric'}
+                        {'metric': 'is_numeric'},
+                        {'metric': 'length'}
                 ],    
         }
     tracer = {

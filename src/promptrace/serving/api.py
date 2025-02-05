@@ -43,12 +43,23 @@ class PromptTraceAPI:
                     # Get experiments with summary statistics
                     cursor.execute("""
                         SELECT 
-                            e.experiment_id,
-                            e.model_type,
-                            e.model_deployment,
-                            e.prompt_template,
-                            e.created_at                          
-                        FROM experiment e
+                            experiment_id,
+                            model_type,
+                            model_api_version,
+                            model_endpoint,
+                            model_deployment,                               
+                            prompt_template,
+                            system_prompt_template,
+                            user_prompt_template,                               
+                            dataset_path,
+                            dataset_record_id,
+                            inference,
+                            prompt_tokens,
+                            completion_tokens,
+                            latency_ms,
+                            eval,
+                            created_at                      
+                        FROM experiment 
                     """)
                     
                     experiments = cursor.fetchall()                    

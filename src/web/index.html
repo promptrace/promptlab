@@ -5,17 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PromptTrace</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         th, td {
-            border: 1px solid black;
-            padding: 8px;
+            border: 1px solid #ddd;
+            padding: 12px;
             text-align: left;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #f4f4f4;
+            color: #333;
+            position: relative;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
         }
         .metrics {
             font-size: 0.9em;
@@ -34,25 +47,143 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .config-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .config-button:hover {
+            background: #e4e4e4;
+        }
+        .config-panel {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .config-panel.show {
+            display: block;
+        }
+        .column-option {
+            margin: 8px 0;
+        }
+        .column-option label {
+            margin-left: 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h1>PromptTrace Dashboard</h1>
+    <h1>Experiments</h1>
+    
+    <!-- Config Button and Panel -->
+    <button class="config-button" onclick="toggleConfig()">⚙️ Columns</button>
+    <div id="configPanel" class="config-panel">
+        <h3>Select Columns to Display</h3>
+        <div id="columnOptions"></div>
+    </div>
+    
     <table id="experimentsTable">
         <thead>
-            <tr>
-                <th>Created At</th>
-                <th>Experiment ID</th>
-                <th>Model Type</th>
-                <th>Deployment</th>
-                <th>Prompt Template</th>
-            </tr>
+            <tr id="headerRow"></tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
     </table>
 
     <script>
+        // Define all possible columns and their defaults
+        const columnConfig = {
+            experiment_id: { label: 'Experiment ID', default: true },
+            dataset_record_id: { label: 'Dataset Record ID', default: true },
+            model_type: { label: 'Model Type', default: true },
+            model_api_version: { label: 'API Version', default: false },
+            model_endpoint: { label: 'Endpoint', default: false },
+            model_deployment: { label: 'Deployment', default: false },
+            prompt_template: { label: 'Prompt Template', default: true },
+            system_prompt_template: { label: 'System Prompt', default: false },
+            user_prompt_template: { label: 'User Prompt', default: false },
+            dataset_path: { label: 'Dataset Path', default: false },
+            inference: { label: 'Inference', default: false },
+            prompt_tokens: { label: 'Prompt Tokens', default: true },
+            completion_tokens: { label: 'Completion Tokens', default: true },
+            latency_ms: { label: 'Latency (ms)', default: true },
+            eval: { label: 'Metrics', default: true, isMetric: false }
+        };
+
+        let experimentsData = [];
+        let selectedColumns = Object.entries(columnConfig)
+            .filter(([_, config]) => config.default)
+            .map(([key, _]) => key);
+        let uniqueMetrics = new Set();
+
+        function toggleConfig() {
+            const panel = document.getElementById('configPanel');
+            panel.classList.toggle('show');
+        }
+
+        function parseEvalMetrics(evalString) {
+            try {
+                // Parse the double-escaped JSON string
+                const metricsArray = JSON.parse(JSON.parse(evalString));
+                return metricsArray.reduce((acc, item) => {
+                    acc[item.metric] = item.result;
+                    uniqueMetrics.add(item.metric);
+                    return acc;
+                }, {});
+            } catch (e) {
+                console.error('Error parsing eval metrics:', e);
+                return {};
+            }
+        }
+
+        function initializeColumnOptions() {
+            const container = document.getElementById('columnOptions');
+            container.innerHTML = '';
+
+            // Add regular columns
+            Object.entries(columnConfig).forEach(([key, config]) => {
+                if (!config.isMetric) {
+                    const div = document.createElement('div');
+                    div.className = 'column-option';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `col-${key}`;
+                    checkbox.checked = selectedColumns.includes(key);
+                    checkbox.addEventListener('change', () => updateColumns(key, checkbox.checked));
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `col-${key}`;
+                    label.textContent = config.label;
+                    
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        function updateColumns(columnKey, isSelected) {
+            if (isSelected && !selectedColumns.includes(columnKey)) {
+                selectedColumns.push(columnKey);
+            } else if (!isSelected) {
+                selectedColumns = selectedColumns.filter(key => key !== columnKey);
+            }
+            renderExperiments(experimentsData);
+        }
+
         async function loadExperiments() {
             try {
                 const response = await fetch('http://localhost:8001/experiments');
@@ -62,7 +193,8 @@
                 const data = await response.json();
                 
                 if (data.experiments) {
-                    renderExperiments(data.experiments);
+                    experimentsData = data.experiments;
+                    renderExperiments(experimentsData);
                 } else {
                     showError('No experiments data found');
                 }
@@ -73,29 +205,78 @@
         }
 
         function renderExperiments(experiments) {
-            const tableBody = document.getElementById('experimentsTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = ''; // Clear existing rows
+            // Clear and rebuild uniqueMetrics
+            uniqueMetrics.clear();
+            experiments.forEach(exp => {
+                if (exp.eval) {
+                    parseEvalMetrics(exp.eval);
+                }
+            });
 
+            // Render headers
+            const headerRow = document.getElementById('headerRow');
+            headerRow.innerHTML = '';
+            
+            // Add non-metric columns
+            selectedColumns.forEach(key => {
+                if (!columnConfig[key].isMetric) {
+                    const th = document.createElement('th');
+                    th.textContent = columnConfig[key].label;
+                    headerRow.appendChild(th);
+                }
+            });
+
+            // Render data rows
+            const tableBody = document.getElementById('experimentsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            metricsHeader = new Set();
             experiments.forEach(exp => {
                 const tr = document.createElement('tr');
                 
-                // Format date
-                const date = new Date(exp.created_at);
-                const formattedDate = date.toLocaleString();
-                
-                // Get filename from path
-                const promptTemplate = exp.prompt_template.split('\\').pop();
-                
-                tr.innerHTML = `
-                    <td>${formattedDate}</td>
-                    <td>${exp.experiment_id}</td>
-                    <td>${exp.model_type}</td>
-                    <td>${exp.model_deployment}</td>
-                    <td class="prompt-path" title="${exp.prompt_template}">${promptTemplate}</td>
-                `;
-                
+                // Add non-metric columns
+                selectedColumns.forEach(key => {
+                    const td = document.createElement('td');
+                    let value = exp[key];
+                    
+                    // Special formatting for certain columns
+                    if (key === 'eval') {
+                        const evalMetrics = parseEvalMetrics(value);
+                        const _keys = Object.keys(evalMetrics);
+                        _keys.forEach(_key => metricsHeader.add(_key));
+                        const _tr = document.createElement("tr");    
+                        Object.values(evalMetrics).forEach(_value => {
+                            const _td = document.createElement("td");
+                            _td.textContent = _value;
+                            _tr.appendChild(_td);
+                        });
+                        td.title = exp[key];
+                        td.appendChild(_tr);
+                        tr.appendChild(td);
+                    } else {
+                        td.textContent = value || '-';
+                        tr.appendChild(td);
+                    }
+                });
+                               
                 tableBody.appendChild(tr);
             });
+            console.log(metricsHeader);
+            // Update header for metrics
+            const thElements = headerRow.getElementsByTagName('th');
+            for (let th of thElements) {
+                if (th.textContent === 'Metrics') {
+                    console.log('Metrics header found');
+                    const _tr = document.createElement("tr");    
+                    metricsHeader.forEach(_value => {
+                        const _td = document.createElement("th");
+                        _td.textContent = _value;
+                        _tr.appendChild(_td);
+                        console.log(_value);
+                    });
+                    th.appendChild(_tr);
+                }
+            }
         }
 
         function showError(message) {
@@ -103,13 +284,15 @@
             error.className = 'error';
             error.textContent = message;
             
-            // Insert error before table
             const table = document.getElementById('experimentsTable');
             table.parentNode.insertBefore(error, table);
         }
 
-        // Load experiments when page loads
-        document.addEventListener('DOMContentLoaded', loadExperiments);
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeColumnOptions();
+            loadExperiments();
+        });
     </script>
 </body>
 </html>

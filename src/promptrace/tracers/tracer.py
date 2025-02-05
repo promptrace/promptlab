@@ -6,5 +6,5 @@ class Tracer(ABC):
         self.trace_target = trace_target
 
     @abstractmethod
-    def trace(self, result, evaluations: list[EvaluationConfig]):
+    def trace(self, result):
         pass

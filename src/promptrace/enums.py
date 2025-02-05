@@ -11,3 +11,4 @@ class ModelType(Enum):
 
 class EvaluationMetric(Enum):
     IS_NUMERIC = "is_numeric"
+    LENGTH = "length"
