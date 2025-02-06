@@ -21,6 +21,7 @@ dependencies = [
     "flask>=3.0.0",
     "flask-cors>=5.0.0",
     "click>=8.0.0",
+    "setuptools>=75.8.0"
 ]
 requires-python = ">=3.8"
 
