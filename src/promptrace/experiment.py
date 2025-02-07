@@ -1,4 +1,5 @@
 import json
+import asyncio
 from typing import List, Dict
 from promptrace.config import ExperimentConfig
 from promptrace.model import Model
@@ -15,33 +16,32 @@ class Experiment:
             dataset = file.read()
         return json.loads(dataset)
     
-    def run(self, model: Model, prompt: Prompt) -> List:
-        run_result = []
-        dataset = self.load_dataset(self.experiment_config.dataset)
-        for item in dataset:
-            system_prompt, user_prompt = prompt.prepare_prompts(item)
-            inference_result = model.invoke(system_prompt, user_prompt)
-            evaluation = self.evaluate_prompts(prompt)
+    async def process_item(self, item: Dict, model: Model, prompt: Prompt) -> Dict:
+        system_prompt, user_prompt = prompt.prepare_prompts(item)
+        inference_result = await model.invoke(system_prompt, user_prompt)  # Model.invoke needs to be async too
+        evaluation = self.evaluate_prompts(prompt)
 
-            res = dict()
-            res["model_type"] = self.experiment_config.model.type
-            res["model_type"] = self.experiment_config.model.type
-            res["model_api_version"] = self.experiment_config.model.api_version
-            res["model_endpoint"] = self.experiment_config.model.endpoint.unicode_string()
-            res["model_deployment"] = self.experiment_config.model.deployment
-            res["prompt_template"] = self.experiment_config.prompt_template
-            res["user_prompt"] = user_prompt
-            res["system_prompt"] = system_prompt
-            res["dataset"] = self.experiment_config.dataset
-            res["dataset_record_id"] = self.get_id(item)
-            res["inference"] = inference_result.inference
-            res["prompt_tokens"] = inference_result.prompt_tokens
-            res["completion_tokens"] = inference_result.completion_tokens
-            res["latency_ms"] = '-'
-            res["eval"] = evaluation
-            
-            run_result.append(res)
-        return run_result
+        return {
+            "model_type": self.experiment_config.model.type,
+            "model_api_version": self.experiment_config.model.api_version,
+            "model_endpoint": self.experiment_config.model.endpoint.unicode_string(),
+            "model_deployment": self.experiment_config.model.deployment,
+            "prompt_template": self.experiment_config.prompt_template,
+            "user_prompt": user_prompt,
+            "system_prompt": system_prompt,
+            "dataset": self.experiment_config.dataset,
+            "dataset_record_id": self.get_id(item),
+            "inference": inference_result.inference,
+            "prompt_tokens": inference_result.prompt_tokens,
+            "completion_tokens": inference_result.completion_tokens,
+            "latency_ms": '-',
+            "eval": evaluation,
+        }
+
+    async def run(self, model: Model, prompt: Prompt) -> List:
+        dataset = self.load_dataset(self.experiment_config.dataset)
+        tasks = [self.process_item(item, model, prompt) for item in dataset]
+        return await asyncio.gather(*tasks)
 
     def get_id(self, item):
         for item_part in item:
