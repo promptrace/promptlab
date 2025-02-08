@@ -174,3 +174,6 @@ test/test_core.py
 
 # Cursor
 .cursor
+
+# Dependency Map
+dependency_map/
