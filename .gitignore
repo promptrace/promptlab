@@ -177,3 +177,6 @@ test/test_core.py
 
 # Dependency Map
 dependency_map/
+
+# Test files
+test/test_async_model.py

@@ -1,7 +1,4 @@
-import json
-from openai import AzureOpenAI
-from openai import OpenAI
-import requests
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 from promptrace.config import ModelConfig
 from dataclasses import dataclass
 from promptrace.enums import ModelType
@@ -15,13 +12,13 @@ class InferenceResult:
 class _AzureOpenAI:
     def __init__(self, api_key, api_version, endpoint, deployment):
         self.deployment = deployment
-        self.client = AzureOpenAI(
+        self.client = AsyncAzureOpenAI(
             api_key=api_key,  
             api_version=api_version,
             azure_endpoint=str(endpoint)
         )
         
-    def invoke(self, system_prompt: str, user_prompt: str):
+    async def invoke(self, system_prompt: str, user_prompt: str):
         payload = [
             {
                 "role": "system",
@@ -32,7 +29,7 @@ class _AzureOpenAI:
                 "content": user_prompt
             }
         ]
-        chat_completion = self.client.chat.completions.create(
+        chat_completion = await self.client.chat.completions.create(
             model=self.deployment, 
             messages=payload
         )
@@ -49,9 +46,9 @@ class _AzureOpenAI:
 class DeepSeek:
     def __init__(self, api_key, endpoint, deployment):
         self.deployment = deployment
-        self.client = OpenAI(api_key=api_key, base_url=str(endpoint))
+        self.client = AsyncOpenAI(api_key=api_key, base_url=str(endpoint))
 
-    def invoke(self, system_prompt: str, user_prompt: str):
+    async def invoke(self, system_prompt: str, user_prompt: str):
         payload = [
             {
                 "role": "system",
@@ -62,7 +59,7 @@ class DeepSeek:
                 "content": user_prompt
             }
         ]
-        chat_completion = self.client.chat.completions.create(
+        chat_completion = await self.client.chat.completions.create(
             model=self.deployment, 
             messages=payload
         )
@@ -91,5 +88,5 @@ class Model:
     def __init__(self, model_config: ModelConfig):
         self.model = ModelFactory.get_model(model_config)
 
-    def invoke(self, system_prompt: str, user_prompt: str):
-        return self.model.invoke(system_prompt, user_prompt)
+    async def invoke(self, system_prompt: str, user_prompt: str):
+        return await self.model.invoke(system_prompt, user_prompt)
