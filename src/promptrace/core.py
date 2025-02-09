@@ -1,6 +1,7 @@
 import http
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
+import asyncio
 
 import pkg_resources
 from promptrace.experiment import Experiment
@@ -9,7 +10,6 @@ from promptrace.prompt import Prompt
 from promptrace.config import ExperimentConfig, TracerConfig, ConfigValidator
 from promptrace.serving.server import _Server
 from promptrace.tracers.tracer_factory import TracerFactory
-import os
 
 # class CustomHandler(http.server.SimpleHTTPRequestHandler):
 #     def do_GET(self):
@@ -28,13 +28,15 @@ class PrompTrace:
         self.tracer = ConfigValidator.validate_tracer_config(tracer)
     
     def run(self, _experiment_config: dict):
+
         self.experiment_config = ConfigValidator.validate_experiment_config(_experiment_config)
         
         model = Model(model_config=self.experiment_config.model)
         prompt = Prompt(prompt_template=self.experiment_config.prompt_template)
 
         experiment = Experiment(self.experiment_config)
-        run_result = experiment.run(model, prompt)
+        # Convert async to sync here
+        run_result = asyncio.run(experiment.run(model, prompt))
 
         tracer = TracerFactory.get_tracer(self.tracer.type, self.tracer.target)
         tracer.trace(run_result)
