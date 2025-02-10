@@ -6,3 +6,4 @@ class InferenceResult:
     inference: str
     prompt_tokens: int
     completion_tokens: int
+    latency_ms: int

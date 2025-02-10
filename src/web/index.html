@@ -111,7 +111,7 @@
             model_api_version: { label: 'API Version', default: false },
             model_endpoint: { label: 'Endpoint', default: false },
             model_deployment: { label: 'Deployment', default: false },
-            prompt_template: { label: 'Prompt Template', default: true },
+            prompt_template_path: { label: 'Prompt Template', default: true },
             system_prompt_template: { label: 'System Prompt', default: false },
             user_prompt_template: { label: 'User Prompt', default: false },
             dataset_path: { label: 'Dataset Path', default: false },
@@ -119,7 +119,7 @@
             prompt_tokens: { label: 'Prompt Tokens', default: true },
             completion_tokens: { label: 'Completion Tokens', default: true },
             latency_ms: { label: 'Latency (ms)', default: true },
-            eval: { label: 'Metrics', default: true, isMetric: false }
+            evaluation: { label: 'Metrics', default: true, isMetric: false }
         };
 
         let experimentsData = [];

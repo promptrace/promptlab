@@ -15,18 +15,18 @@ class StudioServer:
         self.api_server: Optional[StudioApi] = None
         self.api_thread: Optional[threading.Thread] = None
         
-    def start_api_server(self):
+    def start_api_server(self, api_port: int):
         self.api_server = StudioApi(self.tracer_config.db_server)
         self.api_thread = threading.Thread(
             target=self.api_server.run,
-            args=("localhost", self.port + 1),
+            args=("localhost", api_port),
             daemon=True
         )
         self.api_thread.start()
     
-    def start_web_server(self, port: int):
+    def start_web_server(self, web_port: int):
         self.web_server = HTTPServer(
-            ("localhost", port),
+            ("localhost", web_port),
             StudioWebHandler
         )
 
@@ -43,13 +43,13 @@ class StudioServer:
         if self.api_thread and self.api_thread.is_alive():
             self.api_thread.join(timeout=5)
     
-    def start(self, db_path: str, base_port: int = 8000):
+    def start(self):
         try:
             # Start API server first in a separate thread
-            self.start_api_server(db_path, base_port + 1)
+            self.start_api_server(self.port + 1)
             
             # Start web server in main thread
-            self.start_web_server(base_port)
+            self.start_web_server(self.port)
             
         except Exception as e:
             self.shutdown()

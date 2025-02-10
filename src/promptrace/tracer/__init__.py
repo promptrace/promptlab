@@ -1,4 +1,4 @@
-from promptrace.core import PrompTrace
+# from promptrace.core import PrompTrace
 # from promptrace.eval import EvaluationFactory
 from promptrace.model.model import Model
 # from promptrace.tracers.tracer_factory import TracerFactory

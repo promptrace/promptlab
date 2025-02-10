@@ -3,6 +3,7 @@ from openai import AzureOpenAI
 from promptrace.model.model import Model
 from promptrace.config import ModelConfig
 from promptrace.types import InferenceResult
+import time
 
 
 class AzOpenAI(Model):
@@ -27,10 +28,14 @@ class AzOpenAI(Model):
                 "content": user_prompt
             }
         ]
+        start_time = time.time()
         chat_completion = self.client.chat.completions.create(
             model=self.model_config.deployment, 
             messages=payload
         )
+        end_time = time.time()
+        latency_ms = (end_time - start_time) * 1000
+
         inference = chat_completion.choices[0].message.content
         prompt_token = chat_completion.usage.prompt_tokens
         completion_token = chat_completion.usage.completion_tokens
@@ -38,5 +43,6 @@ class AzOpenAI(Model):
         return InferenceResult(
             inference=inference,
             prompt_tokens=prompt_token,
-            completion_tokens=completion_token
+            completion_tokens=completion_token,
+            latency_ms=latency_ms
         )

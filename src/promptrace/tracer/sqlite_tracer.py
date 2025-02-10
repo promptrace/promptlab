@@ -21,7 +21,8 @@ class SQLiteTracer(Tracer):
                         prompt_tokens INTEGER,
                         completion_tokens INTEGER,
                         latency_ms REAL,
-                        evaluation TEXT
+                        evaluation BLOB,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 '''
     
@@ -41,7 +42,8 @@ class SQLiteTracer(Tracer):
                                         prompt_tokens,
                                         completion_tokens,
                                         latency_ms,
-                                        evaluation
+                                        evaluation,
+                                        created_at
                                 ) VALUES (
                                         :experiment_id,
                                         :model_type,
@@ -57,7 +59,8 @@ class SQLiteTracer(Tracer):
                                         :prompt_tokens,
                                         :completion_tokens,
                                         :latency_ms,
-                                        :evaluation
+                                        :evaluation,
+                                        :created_at
                                 )
             '''
     

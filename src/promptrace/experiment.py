@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import uuid
 from typing import List, Dict
@@ -23,6 +24,7 @@ class Experiment:
         dataset = self.load_dataset(self.experiment_config.dataset)
 
         experiment_id = str(uuid.uuid4())
+        current_time = datetime.now().isoformat()
         for item in dataset:
             system_prompt, user_prompt = prompt.prepare_prompts(item)
 
@@ -44,8 +46,9 @@ class Experiment:
             res["inference"] = inference_result.inference
             res["prompt_tokens"] = inference_result.prompt_tokens
             res["completion_tokens"] = inference_result.completion_tokens
-            res["latency_ms"] = '-'
+            res["latency_ms"] = inference_result.latency_ms
             res["evaluation"] = evaluation
+            res["created_at"] = current_time
             
             run_result.append(res)
         return run_result

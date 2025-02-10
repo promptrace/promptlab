@@ -38,9 +38,9 @@ class StudioApi:
                             prompt_tokens,
                             completion_tokens,
                             latency_ms,
-                            evaluation
+                            evaluation,
                             created_at                      
-                        FROM experiment 
+                        FROM experiments 
                     """
     
     def __init__(self, db_path: str = "promptrace.db"):

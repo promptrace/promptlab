@@ -18,6 +18,6 @@ if __name__ == "__main__":
         "db_server": "C:\work\promptrace\test\trace_target\promptrace.db"
     }
     prompt_trace = PrompTrace(tracer)
-    prompt_trace.run(test_experiments)
-#     prompt_trace.start_web_server("C:\work\promptrace\test\trace_target", 8000)
+    # prompt_trace.run(test_experiments)
+    prompt_trace.start_studio(8000)
 
