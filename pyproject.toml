@@ -20,7 +20,7 @@ dependencies = [
     "openai>=1.60.0",
     "flask>=3.0.0",
     "flask-cors>=5.0.0",
-    "click>=8.0.0",
+    "click>=8.0.0"
 ]
 requires-python = ">=3.8"
 

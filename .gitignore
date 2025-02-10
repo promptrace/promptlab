@@ -171,3 +171,12 @@ cython_debug/
 .pypirc
 test/temp.py
 test/test_core.py
+
+# Cursor
+.cursor
+
+# Dependency Map
+dependency_map/
+
+# Test files
+test/test_async_model.py

@@ -3,12 +3,14 @@ import os
 import sys
 from promptrace import PrompTrace
 from promptrace.serving.api import PromptTraceAPI
+from dotenv import load_dotenv
 
 if __name__ == "__main__":
+    load_dotenv()
     test_experiments = {
                 "model" : {
                         "type": "azure_openai",
-                        "api_key": "574499b10fea4553ad7a103db3065e4d", 
+                        "api_key": os.environ["azure_openai_key"], 
                         "api_version": "2024-10-21", 
                         "endpoint": "https://reteval4254999170.openai.azure.com",
                         "deployment": "gpt-4o"
@@ -27,4 +29,3 @@ if __name__ == "__main__":
     prompt_trace = PrompTrace(tracer)
     # prompt_trace.run(test_experiments)
     prompt_trace.start_web_server("C:\work\promptrace\test\trace_target", 8000)
-
