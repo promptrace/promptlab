@@ -1,13 +1,7 @@
 import click
-from pathlib import Path
 import json
-from promptrace.config import ConfigValidator
 from promptrace.core import PrompTrace
-from promptrace.experiment import Experiment
-from promptrace.model import Model
-from promptrace.prompt import Prompt
-from promptrace.serving.server import _Server
-from promptrace.tracers.tracer_factory import TracerFactory
+from promptrace.studio.server import StudioServer
 
 @click.group()
 def cli():
@@ -54,16 +48,16 @@ def run(config, tracer):
 def dashboard(db_dir, port):
     """Start the PromptTrace dashboard web server"""
     try:
-        server = _Server()
-        server.start(db_dir, port)
+        studio_config = {
+            "db_server": db_dir,
+            "port": port
+        }
+        studio_config = json.dumps(studio_config)
+        server = StudioServer(studio_config)
+        server.start()
 
-        # prompt_trace = PrompTrace({
-        #     "type": "local",
-        #     "target": str(Path(db_dir).resolve())
-        # })
         click.echo(f"Starting dashboard at http://localhost:{port}")
         click.echo(f"API running at http://localhost:{port+1}")
-        # prompt_trace.start_web_server(db_dir, port)
         
     except Exception as e:
         click.echo(f"Error: {str(e)}", err=True)

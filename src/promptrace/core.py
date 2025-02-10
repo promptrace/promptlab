@@ -1,44 +1,72 @@
-import http
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-import os
-
-import pkg_resources
 from promptrace.experiment import Experiment
-from promptrace.model import Model
+from promptrace.model.model_factory import ModelFactory
 from promptrace.prompt import Prompt
-from promptrace.config import ExperimentConfig, TracerConfig, ConfigValidator
-from promptrace.serving.server import _Server
-from promptrace.tracers.tracer_factory import TracerFactory
-import os
-
-# class CustomHandler(http.server.SimpleHTTPRequestHandler):
-#     def do_GET(self):
-#         if self.path == "/":
-#             self.path = pkg_resources.resource_filename("web", "index.html")
-#             with open(self.path, "rb") as file:
-#                 self.send_response(200)
-#                 self.send_header("Content-type", "text/html")
-#                 self.end_headers()
-#                 self.wfile.write(file.read())
-#         else:
-#             super().do_GET()
+from promptrace.config import ConfigValidator
+from promptrace.studio.server import StudioServer
+from promptrace.tracer.tracer import Tracer
+from promptrace.tracer.tracer_factory import TracerFactory
 
 class PrompTrace:
-    def __init__(self, tracer: dict):
-        self.tracer = ConfigValidator.validate_tracer_config(tracer)
+    """
+    The PrompTrace class is responsible for managing the execution of experiments
+    and starting the studio server. It validates configurations, runs experiments,
+    and traces the results.
+    """
+
+    def __init__(self, tracer_config: dict):
+        """
+        Initialize the PrompTrace instance with the given tracer configuration.
+
+        Args:
+            tracer_config (dict): Configuration for the tracer. Pass a json object with the following structure:
+
+            {
+                "type": "<tracer_type>",
+                "db_server": "<db_server>"
+            }
+        """
+        self.tracer_config = ConfigValidator.validate_tracer_config(tracer_config)
     
-    def run(self, _experiment_config: dict):
-        self.experiment_config = ConfigValidator.validate_experiment_config(_experiment_config)
-        
-        model = Model(model_config=self.experiment_config.model)
+    def run(self, experiment_config: dict):
+        """
+        Run an experiment with the given experiment configuration.
+
+        Args:
+            experiment_config (dict): Configuration for the experiment. Pass a json object with the following structure:
+            
+            {
+                "model" : {
+                        "type": "<model_type>",
+                        "api_key": "<api_key>", 
+                        "api_version": "<api_version>", 
+                        "endpoint": "<endpoint>",
+                        "deployment": "<deployment>"
+                },
+                "prompt_template": "<prompt_template_path>",
+                "dataset": "<dataset_path>",
+                "variable_map": {
+                    "context": "context",
+                    "question": "question"
+                },
+                "evaluation": [
+                        {'metric': '<metric_name>'},
+                        ...
+                        ...
+                        {'metric': '<metric_name>'}
+                ],    
+            }
+        """
+        self.experiment_config = ConfigValidator.validate_experiment_config(experiment_config)
+
+        model = ModelFactory.get_model(self.experiment_config.model)
         prompt = Prompt(prompt_template=self.experiment_config.prompt_template)
-
         experiment = Experiment(self.experiment_config)
-        run_result = experiment.run(model, prompt)
 
-        tracer = TracerFactory.get_tracer(self.tracer.type, self.tracer.target)
-        tracer.trace(run_result)
+        experiment_summary = experiment.start(model, prompt)
 
-    def start_web_server(self, db_dir: str, port: int = 8000):
-        server = _Server()
-        server.start(db_dir, port)
+        tracer = TracerFactory.get_tracer(self.tracer_config)
+        tracer.trace(experiment_summary)
+
+    def start_studio(self, port: int):
+        server = StudioServer(self.tracer_config, port)
+        server.start()

@@ -2,7 +2,8 @@
 You are a helpful assitant who can extract information from given text.
 
 <<user>>
-Here is some information about a mountain. 
-<description>
+Here is some information. 
+<context>
 
-What's the height of the mountain? Reply only in number and in meter.
+Try answering this question.
+<question>

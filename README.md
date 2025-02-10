@@ -101,3 +101,14 @@ prompt_trace.run(experiment_config)
 
 ## Samples
 [coming soon]
+
+## CLI
+
+PrompTrace
+
+- ptrace experiment list
+- ptrace experiment run -config exp.json -type sqlite -db c:\projects\chat.db
+- ptrace experiment details 
+- ptrace experiment details -id <EXP_GUIAD> 
+- ptrace experiment deploy -id <EXP_GUIAD>
+- ptrace server start -type sqlite -db c:\projects\chat.db

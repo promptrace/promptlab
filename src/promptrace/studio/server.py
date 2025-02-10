@@ -1,41 +1,25 @@
-import http
-from pathlib import Path
 import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-import logging
+from http.server import HTTPServer
 from typing import Optional
-import os
 
-import pkg_resources
-from promptrace.serving.api import PromptTraceAPI
+from promptrace.config import TracerConfig
+from promptrace.studio.api import StudioApi
+from promptrace.studio.web import StudioWebHandler
+          
+class StudioServer:
+    def __init__(self,  tracer_config: TracerConfig, port: int):
+        self.tracer_config = tracer_config
+        self.port = port
 
-class CustomHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == "/":
-            self.path = pkg_resources.resource_filename("web", "index.html")
-            with open(self.path, "rb") as file:
-                self.send_response(200)
-                self.send_header("Content-type", "text/html")
-                self.end_headers()
-                self.wfile.write(file.read())
-        else:
-            super().do_GET()
-            
-class _Server:
-    def __init__(self):
-        
         self.web_server: Optional[HTTPServer] = None
-        self.api_server: Optional[PromptTraceAPI] = None
+        self.api_server: Optional[StudioApi] = None
         self.api_thread: Optional[threading.Thread] = None
         
-    def start_api_server(self, db_path: str, port: int):
-        db_path = db_path.replace("\t", "\\t")
-        db_path = os.path.join(db_path, 'promptrace.db')
-
-        self.api_server = PromptTraceAPI(str(db_path))
+    def start_api_server(self):
+        self.api_server = StudioApi(self.tracer_config.db_server)
         self.api_thread = threading.Thread(
             target=self.api_server.run,
-            args=("localhost", port),
+            args=("localhost", self.port + 1),
             daemon=True
         )
         self.api_thread.start()
@@ -43,7 +27,7 @@ class _Server:
     def start_web_server(self, port: int):
         self.web_server = HTTPServer(
             ("localhost", port),
-            CustomHandler
+            StudioWebHandler
         )
 
         try:

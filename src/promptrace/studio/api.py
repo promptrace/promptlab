@@ -1,9 +1,8 @@
 from pathlib import Path
 import sqlite3
 from flask import Flask, jsonify
-from typing import List, Dict, Any
+from typing import Dict
 import logging
-from datetime import datetime
 
 from flask_cors import CORS
 
@@ -11,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self, db_path: str = "promptrace.db"):
-        db_path = db_path.replace("\t", "\\t")
         self.db_path = Path(db_path)
         if not self.db_path.exists():
             raise FileNotFoundError(f"Database not found at {self.db_path}")
@@ -24,7 +22,7 @@ class DatabaseManager:
         fields = [column[0] for column in cursor.description]
         return {key: value for key, value in zip(fields, row)}
 
-class PromptTraceAPI:
+class StudioApi:
     def __init__(self, db_path: str = "promptrace.db"):
         self.app = Flask(__name__)
         CORS(self.app, resources={r"/*": {"origins": "*"}})

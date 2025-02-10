@@ -1,8 +1,4 @@
-import json
-import os
-import sys
 from promptrace import PrompTrace
-from promptrace.serving.api import PromptTraceAPI
 
 if __name__ == "__main__":
     test_experiments = {
@@ -14,17 +10,14 @@ if __name__ == "__main__":
                         "deployment": "gpt-4o"
                 },
                 "prompt_template": "C:\work\promptrace\test\prompt_template\mountain_height_v1.prompt",
-                "dataset": "C:\work\promptrace\test\dataset\mountain_dataset.jsonl",
-                "evaluation": [
-                        {'metric': 'is_numeric'},
-                        {'metric': 'length'}
-                ],    
+                "dataset": "C:\work\promptrace\test\dataset\qna.jsonl",
+                "evaluation": ['is_numeric','length'],    
         }
     tracer = {
         "type": "sqlite",
-        "target": "C:\work\promptrace\test\trace_target"
+        "db_server": "C:\work\promptrace\test\trace_target\promptrace.db"
     }
     prompt_trace = PrompTrace(tracer)
-    # prompt_trace.run(test_experiments)
-    prompt_trace.start_web_server("C:\work\promptrace\test\trace_target", 8000)
+    prompt_trace.run(test_experiments)
+#     prompt_trace.start_web_server("C:\work\promptrace\test\trace_target", 8000)
 
