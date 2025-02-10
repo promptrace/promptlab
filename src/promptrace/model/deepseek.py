@@ -1,4 +1,5 @@
 from openai import OpenAI
+
 from promptrace.model.model import Model
 from promptrace.types import InferenceResult
 

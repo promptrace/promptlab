@@ -45,7 +45,7 @@ class StudioServer:
     
     def start(self, db_path: str, base_port: int = 8000):
         try:
-            # Start API server first
+            # Start API server first in a separate thread
             self.start_api_server(db_path, base_port + 1)
             
             # Start web server in main thread

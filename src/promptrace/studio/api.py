@@ -1,12 +1,10 @@
 from pathlib import Path
 import sqlite3
-from flask import Flask, jsonify
 from typing import Dict
-import logging
 
+from flask import Flask, jsonify
 from flask_cors import CORS
 
-logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self, db_path: str = "promptrace.db"):
@@ -23,6 +21,28 @@ class DatabaseManager:
         return {key: value for key, value in zip(fields, row)}
 
 class StudioApi:
+
+    SELECT_EXPERIMENTS_QUERY = """
+                        SELECT 
+                            experiment_id,
+                            model_type,
+                            model_api_version,
+                            model_endpoint,
+                            model_deployment,                               
+                            prompt_template_path,
+                            system_prompt_template,
+                            user_prompt_template,                               
+                            dataset_path,
+                            dataset_record_id,
+                            inference,
+                            prompt_tokens,
+                            completion_tokens,
+                            latency_ms,
+                            evaluation
+                            created_at                      
+                        FROM experiment 
+                    """
+    
     def __init__(self, db_path: str = "promptrace.db"):
         self.app = Flask(__name__)
         CORS(self.app, resources={r"/*": {"origins": "*"}})
@@ -34,31 +54,10 @@ class StudioApi:
         def get_experiments():
             try:
                 with self.db.get_connection() as conn:
-                    # Use dictionary cursor
                     conn.row_factory = self.db.dict_factory
                     cursor = conn.cursor()
                     
-                    # Get experiments with summary statistics
-                    cursor.execute("""
-                        SELECT 
-                            experiment_id,
-                            model_type,
-                            model_api_version,
-                            model_endpoint,
-                            model_deployment,                               
-                            prompt_template,
-                            system_prompt_template,
-                            user_prompt_template,                               
-                            dataset_path,
-                            dataset_record_id,
-                            inference,
-                            prompt_tokens,
-                            completion_tokens,
-                            latency_ms,
-                            eval,
-                            created_at                      
-                        FROM experiment 
-                    """)
+                    cursor.execute(self.SELECT_EXPERIMENTS_QUERY)
                     
                     experiments = cursor.fetchall()                    
                     
@@ -67,7 +66,6 @@ class StudioApi:
                     })
                     
             except sqlite3.Error as e:
-                logger.error(f"Database error: {str(e)}")
                 return jsonify({
                     "status": "error",
                     "message": "Database error occurred",
@@ -75,7 +73,6 @@ class StudioApi:
                 }), 500
                 
             except Exception as e:
-                logger.error(f"Unexpected error: {str(e)}")
                 return jsonify({
                     "status": "error",
                     "message": "An unexpected error occurred",

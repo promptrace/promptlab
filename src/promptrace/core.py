@@ -1,10 +1,9 @@
 from promptrace.experiment import Experiment
 from promptrace.model.model_factory import ModelFactory
+from promptrace.tracer.tracer_factory import TracerFactory
 from promptrace.prompt import Prompt
 from promptrace.config import ConfigValidator
 from promptrace.studio.server import StudioServer
-from promptrace.tracer.tracer import Tracer
-from promptrace.tracer.tracer_factory import TracerFactory
 
 class PrompTrace:
     """

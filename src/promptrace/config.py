@@ -1,5 +1,7 @@
-from pydantic import BaseModel, HttpUrl, field_validator
 from typing import List
+
+from pydantic import BaseModel, HttpUrl, field_validator
+
 from promptrace.enums import TracerType
 from promptrace.utils import sanitize_path
 

@@ -1,6 +1,5 @@
 
 import http
-
 import pkg_resources
 
 class StudioWebHandler(http.server.SimpleHTTPRequestHandler):

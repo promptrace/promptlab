@@ -5,6 +5,7 @@ from promptrace.evaluator.length import LengthEvaluator
 
 
 class EvaluatorFactory:
+    
     @staticmethod
     def get_evaluator(strategy: str) -> Evaluator:
         if strategy == EvaluationMetric.IS_NUMERIC.value:

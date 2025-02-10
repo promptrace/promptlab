@@ -1,10 +1,11 @@
 from openai import AzureOpenAI
+
 from promptrace.model.model import Model
 from promptrace.config import ModelConfig
 from promptrace.types import InferenceResult
 
 
-class _AzureOpenAI(Model):
+class AzOpenAI(Model):
     def __init__(self, model_config: ModelConfig):
         super().__init__(model_config)
 
