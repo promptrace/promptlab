@@ -18,11 +18,13 @@
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
+            text-align: center;
         }
         th {
             background-color: #f4f4f4;
             color: #333;
             position: relative;
+            text-align: center;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9;
@@ -98,6 +100,7 @@
     <table id="experimentsTable">
         <thead>
             <tr id="headerRow"></tr>
+            <tr id="headerRow2"></tr>
         </thead>
         <tbody></tbody>
     </table>
@@ -105,47 +108,29 @@
     <script>
         // Define all possible columns and their defaults
         const columnConfig = {
-            experiment_id: { label: 'Experiment ID', default: true },
-            dataset_record_id: { label: 'Dataset Record ID', default: true },
-            model_type: { label: 'Model Type', default: true },
-            model_api_version: { label: 'API Version', default: false },
-            model_endpoint: { label: 'Endpoint', default: false },
-            model_deployment: { label: 'Deployment', default: false },
-            prompt_template_path: { label: 'Prompt Template', default: true },
-            system_prompt_template: { label: 'System Prompt', default: false },
-            user_prompt_template: { label: 'User Prompt', default: false },
-            dataset_path: { label: 'Dataset Path', default: false },
-            inference: { label: 'Inference', default: false },
-            prompt_tokens: { label: 'Prompt Tokens', default: true },
-            completion_tokens: { label: 'Completion Tokens', default: true },
-            latency_ms: { label: 'Latency (ms)', default: true },
-            evaluation: { label: 'Metrics', default: true, isMetric: false }
+            experiment_id: { label: 'Experiment ID', index:0, default: true },
+            dataset_record_id: { label: 'Dataset Record ID', index:1, default: true },
+            model_type: { label: 'Model Type', index:2, default: true },
+            model_api_version: { label: 'API Version', index:3, default: false },
+            model_endpoint: { label: 'Endpoint', index:4, default: false },
+            model_deployment: { label: 'Deployment', index:5, default: false },
+            prompt_template_path: { label: 'Prompt Template', index:6, default: true },
+            system_prompt_template: { label: 'System Prompt', index:7, default: false },
+            user_prompt_template: { label: 'User Prompt', index:8, default: false },
+            dataset_path: { label: 'Dataset Path', index:9, default: false },
+            inference: { label: 'Inference', index:10, default: false },
+            prompt_tokens: { label: 'Prompt Tokens', index:11, default: true },
+            completion_tokens: { label: 'Completion Tokens', index:12, default: true },
+            latency_ms: { label: 'Latency (ms)', index:13, default: true },
         };
 
-        let experimentsData = [];
         let selectedColumns = Object.entries(columnConfig)
             .filter(([_, config]) => config.default)
             .map(([key, _]) => key);
-        let uniqueMetrics = new Set();
 
         function toggleConfig() {
             const panel = document.getElementById('configPanel');
             panel.classList.toggle('show');
-        }
-
-        function parseEvalMetrics(evalString) {
-            try {
-                // Parse the double-escaped JSON string
-                const metricsArray = JSON.parse(JSON.parse(evalString));
-                return metricsArray.reduce((acc, item) => {
-                    acc[item.metric] = item.result;
-                    uniqueMetrics.add(item.metric);
-                    return acc;
-                }, {});
-            } catch (e) {
-                console.error('Error parsing eval metrics:', e);
-                return {};
-            }
         }
 
         function initializeColumnOptions() {
@@ -181,7 +166,10 @@
             } else if (!isSelected) {
                 selectedColumns = selectedColumns.filter(key => key !== columnKey);
             }
-            renderExperiments(experimentsData);
+            selectedColumns.sort((a, b) => columnConfig[a].index - columnConfig[b].index);            
+            console.log(selectedColumns);
+            render_headers();
+            render_body(experimentsData);
         }
 
         async function loadExperiments() {
@@ -194,7 +182,17 @@
                 
                 if (data.experiments) {
                     experimentsData = data.experiments;
-                    renderExperiments(experimentsData);
+                    experimentsData.forEach(function(item, index) {
+                        eval = JSON.parse(item.evaluation);
+                        eval.forEach(function(m, i) {
+                            item['metric_' + m.metric] = m.result;
+                            columnConfig['metric_' + m.metric] = { label: 'metric_'+m.metric, default: false };
+                        });
+                    });
+                    console.log(columnConfig);
+                    initializeColumnOptions();
+                    render_headers();
+                    render_body(experimentsData);
                 } else {
                     showError('No experiments data found');
                 }
@@ -204,79 +202,27 @@
             }
         }
 
-        function renderExperiments(experiments) {
-            // Clear and rebuild uniqueMetrics
-            uniqueMetrics.clear();
-            experiments.forEach(exp => {
-                if (exp.eval) {
-                    parseEvalMetrics(exp.eval);
-                }
-            });
-
-            // Render headers
-            const headerRow = document.getElementById('headerRow');
-            headerRow.innerHTML = '';
-            
-            // Add non-metric columns
-            selectedColumns.forEach(key => {
-                if (!columnConfig[key].isMetric) {
-                    const th = document.createElement('th');
-                    th.textContent = columnConfig[key].label;
-                    headerRow.appendChild(th);
-                }
-            });
+        function render_body(experiments) {
 
             // Render data rows
             const tableBody = document.getElementById('experimentsTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';
 
-            metricsHeader = new Set();
+            // metricsHeader = new Set();
             experiments.forEach(exp => {
                 const tr = document.createElement('tr');
                 
                 // Add non-metric columns
                 selectedColumns.forEach(key => {
                     const td = document.createElement('td');
-                    let value = exp[key];
-                    
-                    // Special formatting for certain columns
-                    if (key === 'eval') {
-                        const evalMetrics = parseEvalMetrics(value);
-                        const _keys = Object.keys(evalMetrics);
-                        _keys.forEach(_key => metricsHeader.add(_key));
-                        const _tr = document.createElement("tr");    
-                        Object.values(evalMetrics).forEach(_value => {
-                            const _td = document.createElement("td");
-                            _td.textContent = _value;
-                            _tr.appendChild(_td);
-                        });
-                        td.title = exp[key];
-                        td.appendChild(_tr);
-                        tr.appendChild(td);
-                    } else {
-                        td.textContent = value || '-';
-                        tr.appendChild(td);
-                    }
+                    let value = exp[key];                   
+
+                    td.textContent = value;
+                    tr.appendChild(td);
                 });
                                
                 tableBody.appendChild(tr);
             });
-            console.log(metricsHeader);
-            // Update header for metrics
-            const thElements = headerRow.getElementsByTagName('th');
-            for (let th of thElements) {
-                if (th.textContent === 'Metrics') {
-                    console.log('Metrics header found');
-                    const _tr = document.createElement("tr");    
-                    metricsHeader.forEach(_value => {
-                        const _td = document.createElement("th");
-                        _td.textContent = _value;
-                        _tr.appendChild(_td);
-                        console.log(_value);
-                    });
-                    th.appendChild(_tr);
-                }
-            }
         }
 
         function showError(message) {
@@ -288,10 +234,44 @@
             table.parentNode.insertBefore(error, table);
         }
 
+        function render_headers() {
+                const headerRow = document.getElementById('headerRow');
+                const headerRow2 = document.getElementById('headerRow2');
+                headerRow.innerHTML = '';
+                headerRow2.innerHTML = '';
+
+                is_metric_created = false;
+                selectedColumns.forEach(key => {
+                        const th = document.createElement('th');
+                        const th2 = document.createElement('th');
+                        if (key.startsWith('metric_')) {
+                            if(is_metric_created == false) {
+                                th.textContent = 'Metrics';
+                                th.colSpan = 2;
+                                th2.textContent = columnConfig[key].label;
+                                is_metric_created = true;
+                                headerRow.appendChild(th);
+
+                            }
+                            else {
+                                th2.textContent = columnConfig[key].label;
+                            }
+                            headerRow2.appendChild(th2);
+                        }
+                        else {
+                            th.textContent = columnConfig[key].label;
+                            th.rowSpan = 2;
+                            headerRow.appendChild(th);
+
+                        }
+                });
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            initializeColumnOptions();
+
             loadExperiments();
+
         });
     </script>
 </body>
