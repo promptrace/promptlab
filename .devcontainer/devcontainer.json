@@ -34,5 +34,15 @@
     "forwardPorts": [8000, 8001],
     "postCreateCommand": "pip install -e .",
     "remoteUser": "vscode",
-    "mounts": [ "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached" ]
+    // Prevents Path related issues on windows
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace",
+    // Windows-specific settings for better performance
+    "otherPortsAttributes": {
+      "onAutoForward": "silent"
+    },
+    "runArgs": [
+      "--memory=4g",
+      "--cpus=2"
+    ]
   }
