@@ -74,7 +74,7 @@ PrompTrace uses VS Code's Development Containers for a consistent development en
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for VS Code
 
-Once all are fullfilled, open the project, then Cmd/Ctrl + Shift + P and search for `Dev Containers: Reopen in container` to run the container.
+Once all are fullfilled, open VSC (dont clone repo yet), then Cmd/Ctrl + Shift + P and search for `Remote-Containers: Clone Repository in Container Volume` to specify the repo, clone it and run the container.
 
 
 Sample code
