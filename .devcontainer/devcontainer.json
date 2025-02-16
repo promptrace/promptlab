@@ -1,0 +1,38 @@
+{
+    "name": "PrompTrace Development",
+    "image": "mcr.microsoft.com/devcontainers/python:1-3.8",
+    "features": {
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.8",
+            "installTools": true
+        },
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/warrenbuckley/codespace-features/sqlite:latest": {}
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-python.python",
+          "ms-python.vscode-pylance",
+          "ms-python.flake8",
+          "mtxr.sqltools",
+          "mtxr.sqltools-driver-sqlite"
+        ],
+        "settings": {
+          "python.defaultInterpreterPath": "/usr/local/bin/python",
+          "python.linting.enabled": true,
+            "[python]": {
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": true,
+                }
+            }
+        }
+      }
+    },
+    "forwardPorts": [8000, 8001],
+    "postCreateCommand": "pip install -e .",
+    "remoteUser": "vscode",
+    "mounts": [ "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached" ]
+  }

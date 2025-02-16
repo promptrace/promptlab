@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 
 @dataclass
@@ -15,22 +15,24 @@ class Prompt:
             with open((self.prompt_template), 'r', encoding='utf-8') as file:
                 prompt_content = file.read()
 
-            pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'    
+            pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'
             matches = re.findall(pattern, prompt_content, re.DOTALL)
-            
+
             if not matches:
                 raise ValueError("No valid prompt format found in template")
-                
+
             self.system_prompt = matches[0][0].strip()
             self.user_prompt = matches[0][1].strip()
 
-            system_prompt_varaibles = re.findall(r'<(.*?)>', self.system_prompt)
+            system_prompt_varaibles = re.findall(
+                r'<(.*?)>', self.system_prompt)
             user_prompt_varaibles = re.findall(r'<(.*?)>', self.user_prompt)
             self.variables = system_prompt_varaibles + user_prompt_varaibles
             self.variables = list(set(self.variables))
-            
+
         except FileNotFoundError:
-            raise FileNotFoundError(f"Prompt template file not found: {self.prompt_template}")
+            raise FileNotFoundError(
+                f"Prompt template file not found: {self.prompt_template}")
         except Exception as e:
             raise ValueError(f"Error parsing prompt template: {str(e)}")
 
@@ -46,6 +48,6 @@ class Prompt:
             user_prompt = user_prompt.replace(placeholder, replacement)
 
         return system_prompt, user_prompt
-    
-    def get_prompts(self) -> tuple[str, str]:
+
+    def get_prompts(self) -> Tuple[str, str]:
         return self.system_prompt, self.user_prompt
