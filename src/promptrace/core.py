@@ -4,6 +4,7 @@ from promptrace.tracer.tracer_factory import TracerFactory
 from promptrace.prompt import Prompt
 from promptrace.config import ConfigValidator
 from promptrace.studio.server import StudioServer
+from promptrace.deployment import Deployment
 
 class PrompTrace:
     """
@@ -47,12 +48,7 @@ class PrompTrace:
                     "context": "context",
                     "question": "question"
                 },
-                "evaluation": [
-                        {'metric': '<metric_name>'},
-                        ...
-                        ...
-                        {'metric': '<metric_name>'}
-                ],    
+                "evaluation": ['<metric_name>']
             }
         """
         self.experiment_config = ConfigValidator.validate_experiment_config(experiment_config)
@@ -69,3 +65,6 @@ class PrompTrace:
     def start_studio(self, port: int):
         server = StudioServer(self.tracer_config, port)
         server.start()
+
+    def deploy(self, experiment_id: str, deployment_dir: str):
+        Deployment.deploy(experiment_id, deployment_dir, self.tracer_config.db_server)
