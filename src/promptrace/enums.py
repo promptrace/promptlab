@@ -15,3 +15,10 @@ class AssetType(Enum):
 class EvaluationMetric(Enum):
     IS_NUMERIC = "is_numeric"
     LENGTH = "length"
+
+class EvalLibrary(Enum):
+    RAGAS = "ragas"
+
+class RagasMetric(Enum):
+    SemanticSimilarity = "SemanticSimilarity"
+    RougeScore = "RougeScore"

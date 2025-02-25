@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import json
 import uuid
@@ -25,11 +26,11 @@ class Experiment:
 
         experiment_id = str(uuid.uuid4())
         current_time = datetime.now().isoformat()
-        for item in dataset:
-            system_prompt, user_prompt = prompt.prepare_prompts(item)
+        for row in dataset:
+            system_prompt, user_prompt = prompt.prepare_prompts(row)
 
             inference_result = model.invoke(system_prompt, user_prompt)
-            evaluation = self.evaluate(inference_result.inference, item)
+            evaluation = self.evaluate(inference_result.inference, row)
 
             res = dict()
             res["experiment_id"] = experiment_id
@@ -37,12 +38,12 @@ class Experiment:
             res["model_type"] = self.experiment_config.model.type
             res["model_api_version"] = self.experiment_config.model.api_version
             res["model_endpoint"] = self.experiment_config.model.endpoint.unicode_string()
-            res["model_deployment"] = self.experiment_config.model.deployment
+            res["model_deployment"] = self.experiment_config.model.inference_model_deployment
             res["prompt_template_path"] = self.experiment_config.prompt_template
             res["user_prompt_template"] = user_prompt
             res["system_prompt_template"] = system_prompt
             res["dataset_path"] = self.experiment_config.dataset
-            res["dataset_record_id"] = item['id']
+            res["dataset_record_id"] = row['id']
             res["inference"] = inference_result.inference
             res["prompt_tokens"] = inference_result.prompt_tokens
             res["completion_tokens"] = inference_result.completion_tokens
@@ -53,15 +54,17 @@ class Experiment:
             run_result.append(res)
         return run_result
       
-    def evaluate(self, inference: str, item) -> str:
+    def evaluate(self, inference: str, row) -> str:
         evaluations = []
-        for metric in self.experiment_config.evaluation:
-            evaluator = EvaluatorFactory.get_evaluator(metric)
-            
-            expected_value = item[metric] if metric in item else None
-            evaluation_result = evaluator.evaluate(inference, expected_value)
+        for eval in self.experiment_config.evaluation:
+            evaluator = EvaluatorFactory.get_evaluator(eval.type, eval.metric, self.experiment_config.model)
+            data = dict()
+            data["inference"] = inference
+            for key, value in eval.column_mapping.items():
+                data[key] = row[value]
+            evaluation_result = evaluator.evaluate(data)
             evaluations.append({
-                "metric": metric,
+                "metric": f'{eval.type}-{eval.metric}',
                 "result": evaluation_result
             })
         return json.dumps(evaluations)

@@ -30,7 +30,7 @@ class AzOpenAI(Model):
         ]
         start_time = time.time()
         chat_completion = self.client.chat.completions.create(
-            model=self.model_config.deployment, 
+            model=self.model_config.inference_model_deployment, 
             messages=payload
         )
         end_time = time.time()

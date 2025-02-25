@@ -53,11 +53,11 @@ class PrompTrace:
         """
         self.experiment_config = ConfigValidator.validate_experiment_config(experiment_config)
 
-        model = ModelFactory.get_model(self.experiment_config.model)
+        inference_model = ModelFactory.get_model(self.experiment_config.model)
         prompt = Prompt(prompt_template=self.experiment_config.prompt_template)
         experiment = Experiment(self.experiment_config)
 
-        experiment_summary = experiment.start(model, prompt)
+        experiment_summary = experiment.start(inference_model, prompt)
 
         tracer = TracerFactory.get_tracer(self.tracer_config)
         tracer.trace(experiment_summary)

@@ -10,16 +10,19 @@ class ModelConfig(BaseModel):
     api_key: str
     api_version: str
     endpoint: HttpUrl
-    deployment: str
+    inference_model_deployment: str
+    embedding_model_deployment: str
 
 class EvaluationConfig(BaseModel):
+    type: str
     metric: str
+    column_mapping: dict
 
 class ExperimentConfig(BaseModel):
     model: ModelConfig
     prompt_template: str
     dataset: str
-    evaluation: List[str]
+    evaluation: List[EvaluationConfig]
 
     class Config:
         extra = "forbid" 
