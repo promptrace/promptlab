@@ -36,6 +36,6 @@ if __name__ == "__main__":
                 ],    
     }
     prompt_trace = PrompTrace(tracer)
-    # prompt_trace.run(experiments)
-    prompt_trace.start_studio(8000)
+    prompt_trace.run(experiments)
+    # prompt_trace.start_studio(8000)
     # prompt_trace.deploy('59b02064-6b7a-4ca1-b290-67ba51809cf2', "C:\work")

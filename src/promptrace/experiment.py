@@ -34,15 +34,6 @@ class Experiment:
 
             res = dict()
             res["experiment_id"] = experiment_id
-            res["model_type"] = self.experiment_config.model.type
-            res["model_type"] = self.experiment_config.model.type
-            res["model_api_version"] = self.experiment_config.model.api_version
-            res["model_endpoint"] = self.experiment_config.model.endpoint.unicode_string()
-            res["model_deployment"] = self.experiment_config.model.inference_model_deployment
-            res["prompt_template_path"] = self.experiment_config.prompt_template
-            res["user_prompt_template"] = user_prompt
-            res["system_prompt_template"] = system_prompt
-            res["dataset_path"] = self.experiment_config.dataset
             res["dataset_record_id"] = row['id']
             res["inference"] = inference_result.inference
             res["prompt_tokens"] = inference_result.prompt_tokens

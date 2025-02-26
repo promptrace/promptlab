@@ -60,7 +60,7 @@ class PrompTrace:
         experiment_summary = experiment.start(inference_model, prompt)
 
         tracer = TracerFactory.get_tracer(self.tracer_config)
-        tracer.trace(experiment_summary)
+        tracer.trace(self.experiment_config, experiment_summary)
 
     def start_studio(self, port: int):
         server = StudioServer(self.tracer_config, port)
