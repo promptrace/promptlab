@@ -31,6 +31,8 @@ class StudioApi:
                                 json_extract(model, '$.inference_model_deployment') AS inference_model_deployment,
                                 json_extract(model, '$.embedding_model_deployment') AS embedding_model_deployment,
                                 json_extract(asset, '$.prompt_template_id') AS prompt_template_id,
+                                '' as system_prompt_template,
+                                '' as user_prompt_template,
                                 json_extract(asset, '$.dataset_id') AS dataset_id,
                                 er.dataset_record_id as dataset_record_id,
                                 er.inference as inference,

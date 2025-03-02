@@ -1,20 +1,18 @@
 from promptrace.asset.asset import Asset
 from promptrace.db.sql_query import SQLQuery
 from promptrace.experiment import Experiment
-from promptrace.model.model_factory import ModelFactory
 from promptrace.tracer.tracer_factory import TracerFactory
-from promptrace.prompt import Prompt
 from promptrace.config import ConfigValidator
 from promptrace.studio.server import StudioServer
 from promptrace.deployment import Deployment
 from promptrace.db.db import get_db_connection
-from promptrace.enums import TracerType
 
 class PrompTrace:
 
     def __init__(self, tracer_config: dict):
         tracer_config = ConfigValidator.validate_tracer_config(tracer_config)        
         self.connection = get_db_connection(tracer_config)
+        self.tracer_config = tracer_config
 
         self.connection.execute(SQLQuery.CREATE_ASSETS_TABLE_QUERY)
         self.connection.execute(SQLQuery.CREATE_EXPERIMENTS_TABLE_QUERY)
