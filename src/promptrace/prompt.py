@@ -1,19 +1,33 @@
 import re
 from dataclasses import dataclass
+import sqlite3
 from typing import List
 
 
 @dataclass
 class Prompt:
     prompt_template: str
+    db_server: str
     system_prompt: str = None
     user_prompt: str = None
     variables: List[str] = None
 
+    SELECT_ASSETS_QUERY = '''SELECT asset_name, asset_binary FROM assets WHERE asset_id = ?'''
+
     def __post_init__(self):
         try:
-            with open((self.prompt_template), 'r', encoding='utf-8') as file:
-                prompt_content = file.read()
+            conn = sqlite3.connect(str(self.db_server))
+            cursor = conn.cursor()
+            
+            cursor.execute(self.SELECT_ASSETS_QUERY,  (self.prompt_template,))
+            
+            prompts = cursor.fetchall()                    
+            if prompts:
+                for asset_name, asset_binary in prompts:
+                    prompt_content = asset_binary
+                    
+            cursor.close()
+            conn.close()
 
             pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'    
             matches = re.findall(pattern, prompt_content, re.DOTALL)

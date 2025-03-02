@@ -1,10 +1,37 @@
 from promptrace import PrompTrace
+from promptrace.asset.dataset import Dataset
+from promptrace.asset.prompt_template import PromptTemplate
 
 if __name__ == "__main__":
     tracer = {
         "type": "sqlite",
         "db_server": "C:\work\promptrace\test\trace_target\promptrace.db"
     }
+  
+    prompt_trace = PrompTrace(tracer)
+
+    system_prompt = "You are a helpful assitant who can extract information from given text."
+    user_prompt = '''Here is some information. 
+                    <context>
+
+                    Try answering this question.
+                    <question>'''
+    
+    prompt = PromptTemplate (
+        name = "question-answering",
+        description = "A prompt that can be used for question answering",
+        system_prompt = system_prompt,
+        user_prompt = user_prompt,
+    )
+
+    dataset = Dataset (
+        name = "qna_eval",
+        file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
+    )
+    
+    # prompt_trace.asset.create_or_update(prompt)    
+    # prompt_trace.asset.create_or_update(dataset)
+
     experiments = {
             "model" : {
                     "type": "azure_openai",
@@ -14,8 +41,8 @@ if __name__ == "__main__":
                     "inference_model_deployment": "gpt-4o",
                     "embedding_model_deployment": "text-embedding-ada-002"
             },
-            "prompt_template": "C:\work\promptrace\test\prompt_template\mountain_height_v1.prompt",
-            "dataset": "C:\work\promptrace\test\dataset\qna.jsonl",
+            "prompt_template": "60a30e59-a314-4613-9630-211235406f40",
+            "dataset": "23167ebf-ed19-4994-96a8-3b538f89dfc8",
             "evaluation": [
                     {
                         "type": "ragas",
@@ -35,7 +62,7 @@ if __name__ == "__main__":
                     }
                 ],    
     }
-    prompt_trace = PrompTrace(tracer)
-    prompt_trace.run(experiments)
-    # prompt_trace.start_studio(8000)
-    # prompt_trace.deploy('59b02064-6b7a-4ca1-b290-67ba51809cf2', "C:\work")
+
+# prompt_trace.experiment.run(experiments, tracer_config=tracer)
+prompt_trace.start_studio(8000)
+# prompt_trace.deploy('59b02064-6b7a-4ca1-b290-67ba51809cf2', "C:\work")

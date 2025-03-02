@@ -23,25 +23,45 @@ class DatabaseManager:
 class StudioApi:
 
     SELECT_EXPERIMENTS_QUERY = """
-                        SELECT 
-                            experiment_id,
-                            model_type,
-                            model_api_version,
-                            model_endpoint,
-                            model_deployment,                               
-                            prompt_template_path,
-                            system_prompt_template,
-                            user_prompt_template,                               
-                            dataset_path,
-                            dataset_record_id,
-                            inference,
-                            prompt_tokens,
-                            completion_tokens,
-                            latency_ms,
-                            evaluation,
-                            created_at                      
-                        FROM experiments 
-                    """
+                                SELECT
+                                e.experiment_id,
+                                json_extract(model, '$.type') AS model_type,
+                                json_extract(model, '$.api_version') AS model_api_version,
+                                json_extract(model, '$.endpoint') AS model_endpoint,
+                                json_extract(model, '$.inference_model_deployment') AS inference_model_deployment,
+                                json_extract(model, '$.embedding_model_deployment') AS embedding_model_deployment,
+                                json_extract(asset, '$.prompt_template_id') AS prompt_template_id,
+                                json_extract(asset, '$.dataset_id') AS dataset_id,
+                                er.dataset_record_id as dataset_record_id,
+                                er.inference as inference,
+                                er.prompt_tokens as prompt_tokens,
+                                er.completion_tokens as completion_tokens,
+                                er.latency_ms as latency_ms,
+                                er.evaluation as evaluation  
+                                FROM experiments e
+                                JOIN experiment_result er on e.experiment_id = er.experiment_id 
+                                """
+
+    # SELECT_EXPERIMENTS_QUERY = """
+    #                     SELECT 
+    #                         experiment_id,
+    #                         model_type,
+    #                         model_api_version,
+    #                         model_endpoint,
+    #                         model_deployment,                               
+    #                         prompt_template_path,
+    #                         system_prompt_template,
+    #                         user_prompt_template,                               
+    #                         dataset_path,
+    #                         dataset_record_id,
+    #                         inference,
+    #                         prompt_tokens,
+    #                         completion_tokens,
+    #                         latency_ms,
+    #                         evaluation,
+    #                         created_at                      
+    #                     FROM experiments 
+    #                 """
     
     def __init__(self, db_path: str = "promptrace.db"):
         self.app = Flask(__name__)
