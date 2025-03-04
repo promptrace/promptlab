@@ -19,6 +19,27 @@ Key Benefits:
 ✅ Seamless integration – Works within your existing web, mobile, or backend project.
 
 ## Core Concepts
+### Asset
+Lifecycle of PrompTrace starts from assets. Assets are artefacts used to design experiments. Assets are immutable. Once created they can't be changed, any attempt to update will create a new version of the same asset. Versioning starts from 0 and automatically incremented. 
+
+There are two types of assets.
+
+#### Prompt Template
+A prompt template is a prompt with or without placeholders. The placeholder are replaced with actual data before sending to LLM. A prompt template has two parts - system prompt and user prompt. The placeholders are marked using `< >`. A sample prompt template -
+
+    system_prompt = "You are a helpful assitant who can answer questions from a given text."
+    user_prompt = '''Here are some information. 
+                    <context>
+
+                    Answer this questions from the given information.
+                    <question>'''
+
+Here, the `<context>` and `<question>` are placeholders which will be replaced by real information and question before sending to LLM.
+
+#### Dataset
+A dataset is a jsonl file which is used to run the evaluation. It's mandatory to have an unique `id` column. PrompTrace doesn't store the actual data, rather it only stores the metadata (file path, credentails etc.).
+
+
 ### Experiment
 Experiment is at the center of PrompTrace. An experiment means running a prompt for a dataset and evaluating the outcome against some defined metrics. It is provided as a json file.
 

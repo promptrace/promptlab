@@ -3,276 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PromptTrace</title>
+    <title>Experiment Comparison</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 20px;
+            background-color: #f5f7fa;
+            color: #2c3e50;
         }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
         table {
-            width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-            text-align: center;
-        }
-        th {
-            background-color: #f4f4f4;
-            color: #333;
-            position: relative;
-            text-align: center;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .metrics {
-            font-size: 0.9em;
-            color: #666;
-        }
-        .error {
-            color: red;
-            padding: 10px;
-            background: #fee;
-            border: 1px solid #fcc;
-            margin: 10px 0;
-        }
-        .prompt-path {
-            max-width: 300px;
+            width: 100%;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
-        .config-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: #f4f4f4;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        th, td {
+            border: 1px solid #edf2f7;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        #compareBtn, #backBtn {
+            margin: 20px 0;
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
         }
-        .config-button:hover {
-            background: #e4e4e4;
+
+        #compareBtn:hover, #backBtn:hover {
+            background-color: #2980b9;
         }
-        .config-panel {
+
+        #compareBtn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #comparisonTable {
             display: none;
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-height: 80vh;
-            overflow-y: auto;
         }
-        .config-panel.show {
-            display: block;
+
+        .evaluation-cell {
+            max-width: 300px;
+            overflow-wrap: break-word;
         }
-        .column-option {
-            margin: 8px 0;
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3498db;
         }
-        .column-option label {
-            margin-left: 8px;
-            cursor: pointer;
+
+        #experimentTable tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Comparison table specific styles */
+        #comparisonTable tr[data-alternate="true"] {
+            background-color: #edf2f7;
+        }
+
+        #comparisonTable tr[data-alternate="false"] {
+            background-color: white;
         }
     </style>
 </head>
 <body>
-    <h1>Experiments</h1>
-    
-    <!-- Config Button and Panel -->
-    <button class="config-button" onclick="toggleConfig()">⚙️ Columns</button>
-    <div id="configPanel" class="config-panel">
-        <h3>Select Columns to Display</h3>
-        <div id="columnOptions"></div>
-    </div>
-    
-    <table id="experimentsTable">
+    <h1>PrompTrace</h1>
+    <button id="compareBtn" disabled>Compare</button>
+    <button id="backBtn">Back</button>
+    <table id="experimentTable">
         <thead>
-            <tr id="headerRow"></tr>
-            <tr id="headerRow2"></tr>
+            <tr>
+                <th><input type="checkbox" id="selectAll"></th>
+                <th>Experiment ID</th>
+                <th>Model Type</th>
+                <th>Embedding Model</th>
+                <th>Inference Model</th>
+                <th>Prompt Template ID</th>
+                <th>Dataset ID</th>
+                <th>System Prompt</th>
+                <th>User Prompt</th>
+            </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <table id="comparisonTable">
+        <thead>
+            <tr>
+                <th>Experiment ID</th>
+                <th>Dataset Record ID</th>
+                <th>Inference</th>
+                <th>Completion Tokens</th>
+                <th>Prompt Tokens</th>
+                <th>Latency (ms)</th>
+                <th>ragas-SemanticSimilarity</th>
+                <th>ragas-RougeScore</th>
+            </tr>
+        </thead>
+        <tbody id="comparisonTableBody"></tbody>
     </table>
 
     <script>
-        // Define all possible columns and their defaults
-        const columnConfig = {
-            experiment_id: { label: 'Experiment ID', index:0, default: true },
-            dataset_record_id: { label: 'Dataset Record ID', index:1, default: true },
-            model_type: { label: 'Model Type', index:2, default: true },
-            model_api_version: { label: 'API Version', index:3, default: false },
-            model_endpoint: { label: 'Endpoint', index:4, default: false },
-            model_deployment: { label: 'Deployment', index:5, default: false },
-            prompt_template_path: { label: 'Prompt Template', index:6, default: true },
-            system_prompt_template: { label: 'System Prompt', index:7, default: false },
-            user_prompt_template: { label: 'User Prompt', index:8, default: false },
-            dataset_path: { label: 'Dataset Path', index:9, default: false },
-            inference: { label: 'Inference', index:10, default: false },
-            prompt_tokens: { label: 'Prompt Tokens', index:11, default: true },
-            completion_tokens: { label: 'Completion Tokens', index:12, default: true },
-            latency_ms: { label: 'Latency (ms)', index:13, default: true },
-        };
+        let experimentsData = null;
 
-        let selectedColumns = Object.entries(columnConfig)
-            .filter(([_, config]) => config.default)
-            .map(([key, _]) => key);
-
-        function toggleConfig() {
-            const panel = document.getElementById('configPanel');
-            panel.classList.toggle('show');
-        }
-
-        function initializeColumnOptions() {
-            const container = document.getElementById('columnOptions');
-            container.innerHTML = '';
-
-            // Add regular columns
-            Object.entries(columnConfig).forEach(([key, config]) => {
-                if (!config.isMetric) {
-                    const div = document.createElement('div');
-                    div.className = 'column-option';
-                    
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = `col-${key}`;
-                    checkbox.checked = selectedColumns.includes(key);
-                    checkbox.addEventListener('change', () => updateColumns(key, checkbox.checked));
-                    
-                    const label = document.createElement('label');
-                    label.htmlFor = `col-${key}`;
-                    label.textContent = config.label;
-                    
-                    div.appendChild(checkbox);
-                    div.appendChild(label);
-                    container.appendChild(div);
-                }
-            });
-        }
-
-        function updateColumns(columnKey, isSelected) {
-            if (isSelected && !selectedColumns.includes(columnKey)) {
-                selectedColumns.push(columnKey);
-            } else if (!isSelected) {
-                selectedColumns = selectedColumns.filter(key => key !== columnKey);
-            }
-            selectedColumns.sort((a, b) => columnConfig[a].index - columnConfig[b].index);            
-            console.log(selectedColumns);
-            render_headers();
-            render_body(experimentsData);
-        }
-
-        async function loadExperiments() {
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('http://localhost:8001/experiments');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+                const currentPort = window.location.port || '8000'; // default to 8000 if no port
+                const apiPort = parseInt(currentPort) + 1;
+                const apiUrl = `http://${window.location.hostname}:${apiPort}/experiments`;
                 
-                if (data.experiments) {
-                    experimentsData = data.experiments;
-                    experimentsData.forEach(function(item, index) {
-                        eval = JSON.parse(item.evaluation);
-                        eval.forEach(function(m, i) {
-                            item['metric_' + m.metric] = m.result;
-                            columnConfig['metric_' + m.metric] = { label: 'metric_'+m.metric, default: false };
-                        });
-                    });
-                    console.log(columnConfig);
-                    initializeColumnOptions();
-                    render_headers();
-                    render_body(experimentsData);
-                } else {
-                    showError('No experiments data found');
-                }
-            } catch (error) {
-                console.error('Error loading experiments:', error);
-                showError('Failed to connect to API server');
-            }
-        }
-
-        function render_body(experiments) {
-
-            // Render data rows
-            const tableBody = document.getElementById('experimentsTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-
-            // metricsHeader = new Set();
-            experiments.forEach(exp => {
-                const tr = document.createElement('tr');
+                const response = await fetch(apiUrl);
+                experimentsData = await response.json();
                 
-                // Add non-metric columns
-                selectedColumns.forEach(key => {
-                    const td = document.createElement('td');
-                    let value = exp[key];                   
+                // Get unique experiments based on experiment_id
+                const uniqueExperiments = Array.from(
+                    new Map(experimentsData.experiments.map(item => [item.experiment_id, item]))
+                    .values()
+                );
 
-                    td.textContent = value;
-                    tr.appendChild(td);
+                const tableBody = document.getElementById('tableBody');
+                uniqueExperiments.forEach(exp => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="experiment-checkbox" data-id="${exp.experiment_id}"></td>
+                        <td>${exp.experiment_id}</td>
+                        <td>${exp.model_type}</td>
+                        <td>${exp.embedding_model_deployment}</td>
+                        <td>${exp.inference_model_deployment}</td>
+                        <td>${exp.prompt_template_id}</td>
+                        <td>${exp.dataset_id}</td>
+                        <td>${exp.system_prompt_template}</td>
+                        <td>${exp.user_prompt_template}</td>
+                    `;
+                    tableBody.appendChild(row);
                 });
-                               
-                tableBody.appendChild(tr);
+
+                // Handle checkbox events
+                const compareBtn = document.getElementById('compareBtn');
+                const checkboxes = document.querySelectorAll('.experiment-checkbox');
+                const selectAll = document.getElementById('selectAll');
+
+                function updateCompareButton() {
+                    const checkedBoxes = document.querySelectorAll('.experiment-checkbox:checked');
+                    compareBtn.disabled = checkedBoxes.length === 0;
+                }
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateCompareButton);
+                });
+
+                selectAll.addEventListener('change', (e) => {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = e.target.checked;
+                    });
+                    updateCompareButton();
+                });
+
+                // Modified Compare button click handler
+                compareBtn.addEventListener('click', () => {
+                    const selectedExperiments = Array.from(document.querySelectorAll('.experiment-checkbox:checked'))
+                        .map(checkbox => checkbox.dataset.id);
+                    
+                    const filteredData = experimentsData.experiments.filter(exp => 
+                        selectedExperiments.includes(exp.experiment_id)
+                    );
+
+                    renderComparisonTable(filteredData);
+                    
+                    // Toggle visibility
+                    document.getElementById('experimentTable').style.display = 'none';
+                    document.getElementById('comparisonTable').style.display = 'table';
+                    document.getElementById('compareBtn').style.display = 'none';
+                    document.getElementById('backBtn').style.display = 'block';
+                });
+
+                // Back button click handler
+                document.getElementById('backBtn').addEventListener('click', () => {
+                    document.getElementById('experimentTable').style.display = 'table';
+                    document.getElementById('comparisonTable').style.display = 'none';
+                    document.getElementById('compareBtn').style.display = 'block';
+                    document.getElementById('backBtn').style.display = 'none';
+                });
+
+            } catch (error) {
+                console.error('Error fetching experiments:', error);
+            }
+        });
+
+        function renderComparisonTable(data) {
+            const comparisonTableBody = document.getElementById('comparisonTableBody');
+            comparisonTableBody.innerHTML = '';
+
+            // Sort data by dataset_record_id
+            data.sort((a, b) => {
+                // Extract numeric values from dataset_record_id
+                const numA = parseInt(a.dataset_record_id);
+                const numB = parseInt(b.dataset_record_id);
+                return numA - numB;
+            });
+
+            let currentRecordId = '';
+            let isAlternate = false;
+
+            data.forEach(exp => {
+                const row = document.createElement('tr');
+                const evaluationData = JSON.parse(exp.evaluation);
+                
+                // Check if dataset_record_id has changed
+                if (currentRecordId !== exp.dataset_record_id) {
+                    isAlternate = !isAlternate;
+                    currentRecordId = exp.dataset_record_id;
+                }
+
+                // Add background color based on alternate records
+                row.style.backgroundColor = isAlternate ? '#7484a1' : '#ffffff';
+                
+                // Create a map of metric results
+                const metricResults = {};
+                evaluationData.forEach(e => {
+                    metricResults[e.metric] = e.result.toFixed(4);
+                });
+
+                row.innerHTML = `
+                    <td>${exp.experiment_id}</td>
+                    <td>${exp.dataset_record_id}</td>
+                    <td>${exp.inference}</td>
+                    <td>${exp.completion_tokens}</td>
+                    <td>${exp.prompt_tokens}</td>
+                    <td>${exp.latency_ms.toFixed(2)}</td>
+                    <td>${metricResults['ragas-SemanticSimilarity'] || '-'}</td>
+                    <td>${metricResults['ragas-RougeScore'] || '-'}</td>
+                `;
+                comparisonTableBody.appendChild(row);
             });
         }
-
-        function showError(message) {
-            const error = document.createElement('div');
-            error.className = 'error';
-            error.textContent = message;
-            
-            const table = document.getElementById('experimentsTable');
-            table.parentNode.insertBefore(error, table);
-        }
-
-        function render_headers() {
-                const headerRow = document.getElementById('headerRow');
-                const headerRow2 = document.getElementById('headerRow2');
-                headerRow.innerHTML = '';
-                headerRow2.innerHTML = '';
-
-                is_metric_created = false;
-                selectedColumns.forEach(key => {
-                        const th = document.createElement('th');
-                        const th2 = document.createElement('th');
-                        if (key.startsWith('metric_')) {
-                            if(is_metric_created == false) {
-                                th.textContent = 'Metrics';
-                                th.colSpan = 2;
-                                th2.textContent = columnConfig[key].label;
-                                is_metric_created = true;
-                                headerRow.appendChild(th);
-
-                            }
-                            else {
-                                th2.textContent = columnConfig[key].label;
-                            }
-                            headerRow2.appendChild(th2);
-                        }
-                        else {
-                            th.textContent = columnConfig[key].label;
-                            th.rowSpan = 2;
-                            headerRow.appendChild(th);
-
-                        }
-                });
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-
-            loadExperiments();
-
-        });
     </script>
 </body>
 </html>

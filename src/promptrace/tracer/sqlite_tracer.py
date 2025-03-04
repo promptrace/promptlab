@@ -1,91 +1,41 @@
-import sqlite3
+from datetime import datetime
 from typing import Dict, List
+import json
+
+from promptrace.config import ExperimentConfig, TracerConfig
+from promptrace.db.sqlite import SQLiteClient
 from promptrace.tracer.tracer import Tracer
+from promptrace.db.sql import SQLQuery
 
 class SQLiteTracer(Tracer):
     
-    CREATE_EXPERIMENTS_TABLE_QUERY = '''
-                    CREATE TABLE IF NOT EXISTS experiments (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        experiment_id TEXT,
-                        model_type TEXT,
-                        model_api_version TEXT,
-                        model_endpoint TEXT,
-                        model_deployment TEXT,
-                        prompt_template_path TEXT,
-                        system_prompt_template TEXT,
-                        user_prompt_template TEXT,
-                        dataset_path TEXT,
-                        dataset_record_id TEXT,
-                        inference TEXT,
-                        prompt_tokens INTEGER,
-                        completion_tokens INTEGER,
-                        latency_ms REAL,
-                        evaluation BLOB,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                '''
-    
-    INSERT_BATCH_EXPERIMENTS_QUERY = '''
-                                INSERT INTO experiments (
-                                        experiment_id,
-                                        model_type,
-                                        model_api_version,
-                                        model_endpoint,
-                                        model_deployment,                               
-                                        prompt_template_path,
-                                        system_prompt_template,
-                                        user_prompt_template,                               
-                                        dataset_path,
-                                        dataset_record_id,
-                                        inference,
-                                        prompt_tokens,
-                                        completion_tokens,
-                                        latency_ms,
-                                        evaluation,
-                                        created_at
-                                ) VALUES (
-                                        :experiment_id,
-                                        :model_type,
-                                        :model_api_version,
-                                        :model_endpoint,
-                                        :model_deployment,                               
-                                        :prompt_template_path,
-                                        :system_prompt_template,
-                                        :user_prompt_template,                               
-                                        :dataset_path,
-                                        :dataset_record_id,
-                                        :inference,
-                                        :prompt_tokens,
-                                        :completion_tokens,
-                                        :latency_ms,
-                                        :evaluation,
-                                        :created_at
-                                )
-            '''
-    
-    def __init__(self, db_server: str):
-        """
-        Initialize SQLite tracer.
+    def __init__(self, tracer_config: TracerConfig):
+
+        self.db_client = SQLiteClient(tracer_config.db_file)
+
+    def init_db(self):
         
-        Args:
-            db_server: File path of the SQLite database file.
-        """
-        super().__init__(db_server)
-        self.db_path = self.db_server
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self.connection = sqlite3.connect(self.db_path)
+        self.db_client.execute_query(SQLQuery.CREATE_ASSETS_TABLE_QUERY)
+        self.db_client.execute_query(SQLQuery.CREATE_EXPERIMENTS_TABLE_QUERY)   
+        self.db_client.execute_query(SQLQuery.CREATE_EXPERIMENT_RESULT_TABLE_QUERY)
 
-        self._initialize_database()
+    def trace(self, experiment_config: ExperimentConfig, experiment_summary: List[Dict]) -> None:
 
-    def _initialize_database(self):
-        """Create database tables if they don't exist."""
-        try:
-            with self.connection:
-                self.connection.execute(self.CREATE_EXPERIMENTS_TABLE_QUERY)                
-        except sqlite3.Error as e:
-            raise SyntaxError(f"Failed to initialize SQLite database: {str(e)}")
+        timestamp = datetime.now().isoformat()
+        experiment_id = experiment_summary[0]['experiment_id']
 
-    def trace(self, experiment_summary: List[Dict]) -> None:
-        with self.connection:
-            self.connection.executemany(self.INSERT_BATCH_EXPERIMENTS_QUERY, experiment_summary)
+        model = {
+            "type": experiment_config.model.type,
+            "api_version": experiment_config.model.api_version,
+            "endpoint": str(experiment_config.model.endpoint),
+            "inference_model_deployment": experiment_config.model.inference_model_deployment,
+            "embedding_model_deployment": experiment_config.model.embedding_model_deployment
+        }
+
+        asset = {
+            "prompt_template_id": experiment_config.prompt_template_id,
+            "dataset_id": experiment_config.dataset_id
+        }
+
+        self.db_client.execute_query(SQLQuery.INSERT_EXPERIMENT_QUERY, (experiment_id, json.dumps(model), json.dumps(asset), 0, None, timestamp))
+        self.db_client.execute_query_many(SQLQuery.INSERT_BATCH_EXPERIMENT_RESULT_QUERY, experiment_summary)

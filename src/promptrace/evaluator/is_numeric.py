@@ -1,9 +1,8 @@
 from promptrace.evaluator.evaluator import Evaluator
 
-
 class IsNumericEvaluator(Evaluator):
     
-    def evaluate(self, inference: str, expected_value: str = None) -> str:
+    def evaluate(self, inference: str) -> str:
         val = False
         if isinstance(inference, (int, float)):
             val = True
