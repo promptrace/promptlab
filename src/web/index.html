@@ -139,7 +139,11 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('http://localhost:8001/experiments');
+                const currentPort = window.location.port || '8000'; // default to 8000 if no port
+                const apiPort = parseInt(currentPort) + 1;
+                const apiUrl = `http://${window.location.hostname}:${apiPort}/experiments`;
+                
+                const response = await fetch(apiUrl);
                 experimentsData = await response.json();
                 
                 // Get unique experiments based on experiment_id
