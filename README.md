@@ -86,6 +86,18 @@ Tracer stores the experiment output.
 - Create a folder for prompt template and store the prompt template there.
 - Create a folder for dataset and store the dataset there.
 
+### Development Setup
+
+PrompTrace uses VS Code's Development Containers for a consistent development environment. This ensures all developers have the same setup with required dependencies and tools.
+
+### Prerequisites
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for VS Code
+
+Once all are fullfilled, open VSC (dont clone repo yet), then Cmd/Ctrl + Shift + P and search for `Remote-Containers: Clone Repository in Container Volume` to specify the repo, clone it and run the container.
+
+
 Sample code
 
 ```python
