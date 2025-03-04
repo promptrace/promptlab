@@ -1,42 +1,41 @@
 from datetime import datetime
-import json
-from pathlib import Path
-import sqlite3
 from typing import Dict, List
-import uuid
-from promptrace.config import ExperimentConfig
-from promptrace.enums import AssetType
+import json
+
+from promptrace.config import ExperimentConfig, TracerConfig
+from promptrace.db.sqlite import SQLiteClient
 from promptrace.tracer.tracer import Tracer
-from promptrace.utils import sanitize_path
-from promptrace.db.sql_query import SQLQuery
+from promptrace.db.sql import SQLQuery
 
 class SQLiteTracer(Tracer):
     
-    def __init__(self, connection: sqlite3.Connection):
+    def __init__(self, tracer_config: TracerConfig):
 
-        super().__init__(connection)
+        self.db_client = SQLiteClient(tracer_config.db_file)
+
+    def init_db(self):
+        
+        self.db_client.execute_query(SQLQuery.CREATE_ASSETS_TABLE_QUERY)
+        self.db_client.execute_query(SQLQuery.CREATE_EXPERIMENTS_TABLE_QUERY)   
+        self.db_client.execute_query(SQLQuery.CREATE_EXPERIMENT_RESULT_TABLE_QUERY)
 
     def trace(self, experiment_config: ExperimentConfig, experiment_summary: List[Dict]) -> None:
-        with self.connection:
-            timestamp = datetime.now().isoformat()
-            experiment_id = str(uuid.uuid4())
 
-            model = {
-                "type": experiment_config.model.type,
-                "api_version": experiment_config.model.api_version,
-                "endpoint": str(experiment_config.model.endpoint),
-                "inference_model_deployment": experiment_config.model.inference_model_deployment,
-                "embedding_model_deployment": experiment_config.model.embedding_model_deployment
-            }
+        timestamp = datetime.now().isoformat()
+        experiment_id = experiment_summary[0]['experiment_id']
 
-            asset = {
-                "prompt_template_id": experiment_config.prompt_template,
-                "dataset_id": experiment_config.dataset
-            }
+        model = {
+            "type": experiment_config.model.type,
+            "api_version": experiment_config.model.api_version,
+            "endpoint": str(experiment_config.model.endpoint),
+            "inference_model_deployment": experiment_config.model.inference_model_deployment,
+            "embedding_model_deployment": experiment_config.model.embedding_model_deployment
+        }
 
-            self.connection.execute(SQLQuery.INSERT_EXPERIMENT_QUERY, (experiment_id, json.dumps(model), json.dumps(asset),0, None, timestamp))
+        asset = {
+            "prompt_template_id": experiment_config.prompt_template_id,
+            "dataset_id": experiment_config.dataset_id
+        }
 
-            for exp in experiment_summary:
-                exp['experiment_id'] = experiment_id
-
-            self.connection.executemany(SQLQuery.INSERT_BATCH_EXPERIMENT_RESULT_QUERY, experiment_summary)
+        self.db_client.execute_query(SQLQuery.INSERT_EXPERIMENT_QUERY, (experiment_id, json.dumps(model), json.dumps(asset), 0, None, timestamp))
+        self.db_client.execute_query_many(SQLQuery.INSERT_BATCH_EXPERIMENT_RESULT_QUERY, experiment_summary)

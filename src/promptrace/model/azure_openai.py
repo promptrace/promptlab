@@ -1,13 +1,14 @@
 from openai import AzureOpenAI
 
 from promptrace.model.model import Model
-from promptrace.config import ModelConfig
-from promptrace.types import InferenceResult
+from promptrace.types import InferenceResult, ModelConfig
 import time
 
 
 class AzOpenAI(Model):
+
     def __init__(self, model_config: ModelConfig):
+
         super().__init__(model_config)
 
         self.model_config = model_config
@@ -18,6 +19,7 @@ class AzOpenAI(Model):
         )
         
     def invoke(self, system_prompt: str, user_prompt: str):
+
         payload = [
             {
                 "role": "system",
@@ -28,11 +30,14 @@ class AzOpenAI(Model):
                 "content": user_prompt
             }
         ]
+
         start_time = time.time()
+
         chat_completion = self.client.chat.completions.create(
             model=self.model_config.inference_model_deployment, 
             messages=payload
         )
+        
         end_time = time.time()
         latency_ms = (end_time - start_time) * 1000
 

@@ -1,5 +1,5 @@
-import asyncio
 import os
+
 from promptrace.evaluator.evaluator import Evaluator
 from ragas.dataset_schema import SingleTurnSample
 from ragas.metrics import RougeScore
@@ -8,12 +8,17 @@ from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.llms import LangchainLLMWrapper
 from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAIEmbeddings
-from promptrace.config import ModelConfig
+
+from promptrace.types import ModelConfig
 
 class RagasSemanticSimilarity(Evaluator):
+
     def __init__(self, model: ModelConfig):
+
         super().__init__(model)
+
         os.environ["AZURE_OPENAI_API_KEY"] = model.api_key
+
         self.evaluator_llm = LangchainLLMWrapper(AzureChatOpenAI(
             openai_api_version=self.model.api_version,
             azure_endpoint=str(self.model.endpoint),
@@ -30,6 +35,7 @@ class RagasSemanticSimilarity(Evaluator):
         ))
 
     def evaluate(self, data: dict) -> str:
+
         sample = SingleTurnSample(
             response=data["response"],
             reference=data["reference"]
@@ -37,12 +43,17 @@ class RagasSemanticSimilarity(Evaluator):
 
         scorer = SemanticSimilarity(embeddings=LangchainEmbeddingsWrapper(self.evaluator_embeddings))
         val = scorer.single_turn_score(sample)        
+
         return val
     
 class RagasRougeScore(Evaluator):
+
     def __init__(self, model: ModelConfig):
+
         super().__init__(model)
+
         os.environ["AZURE_OPENAI_API_KEY"] = model.api_key
+
         self.evaluator_llm = LangchainLLMWrapper(AzureChatOpenAI(
             openai_api_version=self.model.api_version,
             azure_endpoint=str(self.model.endpoint),
@@ -59,6 +70,7 @@ class RagasRougeScore(Evaluator):
         ))
     
     def evaluate(self, data: dict) -> str:
+        
         sample = SingleTurnSample(
             response=data["response"],
             reference=data["reference"]

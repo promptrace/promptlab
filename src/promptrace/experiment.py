@@ -1,68 +1,83 @@
-import asyncio
 from datetime import datetime
+from typing import List, Dict, Tuple
 import json
-import sqlite3
+import re
 import uuid
-from typing import List, Dict
 
-from promptrace.asset.dataset import Dataset
-from promptrace.asset.prompt_template import PromptTemplate
 from promptrace.config import ConfigValidator, ExperimentConfig
-from promptrace.model.model import Model
+from promptrace.db.sql import SQLQuery
 from promptrace.model.model_factory import ModelFactory
-from promptrace.prompt import Prompt
 from promptrace.evaluator.evaluator_factory import EvaluatorFactory
-from promptrace.tracer.tracer_factory import TracerFactory
-from promptrace.utils import sanitize_path
+from promptrace.tracer.tracer import Tracer
+from promptrace.utils import Utils
 
 class Experiment:
-    def __init__(self, connection: sqlite3.Connection):
-        
-        self.connection = connection
-
-    # SELECT_ASSETS_QUERY = '''SELECT asset_name, asset_binary FROM assets WHERE asset_id = ?'''
-
-    # def load_dataset(self, dataset_path: str) -> List[Dict]:
-    #     conn = sqlite3.connect(str('C:\work\promptrace\\test\\trace_target\promptrace.db'))
-    #     cursor = conn.cursor()
-        
-    #     cursor.execute(self.SELECT_ASSETS_QUERY,  (dataset_path,))
-        
-    #     datasets = cursor.fetchall()                    
-    #     if datasets:
-    #         for asset_name, asset_binary in datasets:
-    #             dataset_path = asset_binary
-                
-    #     cursor.close()
-    #     conn.close()
-
-    #     dataset_path = json.loads(dataset_path)
-    #     dataset_path = dataset_path['file_path']
-    #     dataset_path = sanitize_path(dataset_path)
-    #     dataset = []
-    #     with open(dataset_path, 'r') as file:
-    #         for line in file:
-    #             dataset.append(json.loads(line.strip()))
-    #     return dataset
+    def __init__(self, tracer: Tracer):        
+        self.tracer = tracer
     
-    def run(self, experiment_config: ExperimentConfig, tracer_config: dict):
-        experiment_config = ConfigValidator.validate_experiment_config(experiment_config)
-        tracer_config = ConfigValidator.validate_tracer_config(tracer_config)        
+    def run(self, experiment_config: ExperimentConfig):
 
-        prompt = PromptTemplate.get(sql_connection=self.connection, prompt_template_id=experiment_config.prompt_template)
+        experiment_config = ExperimentConfig(**experiment_config)
+        ConfigValidator.validate_experiment_config(experiment_config)
+
+        prompt_template = self.tracer.db_client.fetch_data(SQLQuery.SELECT_ASSET_QUERY, (experiment_config.prompt_template_id,))[0]
+        system_prompt, user_prompt, prompt_template_variables = self.split_prompt_template(prompt_template)
+        
+        eval_dataset_path = self.tracer.db_client.fetch_data(SQLQuery.SELECT_DATASET_FILE_PATH_QUERY, (experiment_config.dataset_id,))[0]
+        eval_dataset = Utils.load_dataset(eval_dataset_path['file_path'])
+
+        exp_summary = self.init_batch_eval(eval_dataset, system_prompt, user_prompt, prompt_template_variables, experiment_config)
+
+        self.tracer.trace(experiment_config, exp_summary)
+
+    def init_batch_eval(self, eval_dataset, system_prompt, user_prompt, prompt_template_variables, experiment_config: ExperimentConfig) -> List:
 
         inference_model = ModelFactory.get_model(experiment_config.model)
+        experiment_id = str(uuid.uuid4())
+        timestamp = datetime.now().isoformat()
 
-        ds = Dataset.get(sql_connection=self.connection, ds_id=experiment_config.dataset)
+        exp_summary = []
 
-        # experiment = Experiment(experiment_config)
+        for eval_record in eval_dataset:
+            system_prompt, user_prompt = self.prepare_prompts(eval_record, system_prompt, user_prompt, prompt_template_variables)
 
-        experiment_summary = Experiment.start(inference_model, prompt, ds.ds, experiment_config)
+            inference_result = inference_model.invoke(system_prompt, user_prompt)
+            evaluation = self.evaluate(inference_result.inference, eval_record, experiment_config)
 
-        tracer = TracerFactory.get_tracer(tracer_config.type, self.connection)
-        tracer.trace(experiment_config, experiment_summary)
-      
-    def evaluate(inference: str, row, experiment_config: ExperimentConfig) -> str:
+            eval = dict()
+            eval["experiment_id"] = experiment_id
+            eval["dataset_record_id"] = eval_record['id']
+            eval["inference"] = inference_result.inference
+            eval["prompt_tokens"] = inference_result.prompt_tokens
+            eval["completion_tokens"] = inference_result.completion_tokens
+            eval["latency_ms"] = inference_result.latency_ms
+            eval["evaluation"] = evaluation
+            eval["created_at"] = timestamp
+            
+            exp_summary.append(eval)
+
+        return exp_summary
+    
+    def split_prompt_template(self, asset: Dict) -> Tuple[str, str, List[str]]:
+        
+        pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'    
+        matches = re.findall(pattern, asset['asset_binary'], re.DOTALL)
+        
+        if not matches:
+            raise ValueError("No valid prompt format found in template")
+            
+        system_prompt = matches[0][0].strip()
+        user_prompt = matches[0][1].strip()
+
+        system_prompt_varaibles = re.findall(r'<(.*?)>', system_prompt)
+        user_prompt_varaibles = re.findall(r'<(.*?)>', user_prompt)
+        prompt_template_variables = system_prompt_varaibles + user_prompt_varaibles
+        prompt_template_variables = list(set(prompt_template_variables))
+
+        return system_prompt, user_prompt, prompt_template_variables
+
+    def evaluate(self, inference: str, row, experiment_config: ExperimentConfig) -> str:
+
         evaluations = []
         for eval in experiment_config.evaluation:
             evaluator = EvaluatorFactory.get_evaluator(eval.type, eval.metric, experiment_config.model)
@@ -77,26 +92,13 @@ class Experiment:
             })
         return json.dumps(evaluations)
     
-    def start(model: Model, prompt: PromptTemplate, dataset: List[Dict], experiment_config: ExperimentConfig) -> List:
-        run_result = []
+    def prepare_prompts(self, item, system_prompt, user_prompt, prompt_template_variables):
 
-        experiment_id = str(uuid.uuid4())
-        current_time = datetime.now().isoformat()
-        for row in dataset:
-            system_prompt, user_prompt = prompt.prepare_prompts(row)
+        for variable in prompt_template_variables:
+            placeholder = f'<{variable}>'
+            replacement = f'<{item[variable]}>'
 
-            inference_result = model.invoke(system_prompt, user_prompt)
-            evaluation = Experiment.evaluate(inference_result.inference, row, experiment_config)
+            system_prompt = system_prompt.replace(placeholder, replacement)
+            user_prompt = user_prompt.replace(placeholder, replacement)
 
-            res = dict()
-            res["experiment_id"] = experiment_id
-            res["dataset_record_id"] = row['id']
-            res["inference"] = inference_result.inference
-            res["prompt_tokens"] = inference_result.prompt_tokens
-            res["completion_tokens"] = inference_result.completion_tokens
-            res["latency_ms"] = inference_result.latency_ms
-            res["evaluation"] = evaluation
-            res["created_at"] = current_time
-            
-            run_result.append(res)
-        return run_result
+        return system_prompt, user_prompt

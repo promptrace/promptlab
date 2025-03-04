@@ -1,9 +1,7 @@
 from enum import Enum
 
 class TracerType(Enum):
-    FILE = "file"
     SQLITE = "sqlite"
-    CONSOLE = "console"
 
 class ModelType(Enum):
     AZURE_OPENAI = "azure_openai"
@@ -11,6 +9,7 @@ class ModelType(Enum):
 
 class AssetType(Enum):
     PROMPT_TEMPLATE = "prompt_template"
+    DATASET = "dataset"
 
 class EvaluationMetric(Enum):
     IS_NUMERIC = "is_numeric"

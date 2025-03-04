@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from promptrace.config import ModelConfig
+
+from promptrace.types import ModelConfig
  
 class Evaluator(ABC):
     

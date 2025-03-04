@@ -1,13 +1,12 @@
 from promptrace import PrompTrace
-from promptrace.asset.dataset import Dataset
-from promptrace.asset.prompt_template import PromptTemplate
+from promptrace.types import Dataset, PromptTemplate
 
 if __name__ == "__main__":
 
     # Create prompt trace object.
     tracer = {
         "type": "sqlite",
-        "db_server": "C:\work\promptrace\test\trace_target\promptrace.db"
+        "db_file": "C:\work\promptrace\test\trace_target\promptrace.db"
     }
   
     prompt_trace = PrompTrace(tracer)
@@ -29,48 +28,52 @@ if __name__ == "__main__":
 
     dataset = Dataset (
         name = "qna_eval",
+        description = "qna eval dataset",
         file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
     )
     
-    prompt_trace.asset.create_or_update(prompt)    
-    prompt_trace.asset.create_or_update(dataset)
+    # prompt_trace.asset.create_or_update(prompt)    
+    # prompt_trace.asset.create_or_update(dataset)
 
-    # # Run experiments.
-    # experiments = {
-    #         "model" : {
-    #                 "type": "azure_openai",
-    #                 "api_key": "574499b10fea4553ad7a103db3065e4d", 
-    #                 "api_version": "2024-10-21", 
-    #                 "endpoint": "https://reteval4254999170.openai.azure.com",
-    #                 "inference_model_deployment": "gpt-4o",
-    #                 "embedding_model_deployment": "text-embedding-ada-002"
-    #         },
-    #         "prompt_template": "60a30e59-a314-4613-9630-211235406f40",
-    #         "dataset": "23167ebf-ed19-4994-96a8-3b538f89dfc8",
-    #         "evaluation": [
-    #                 {
-    #                     "type": "ragas",
-    #                     "metric": "SemanticSimilarity",
-    #                     "column_mapping": {
-    #                         "response":"answer",
-    #                         "reference":"context"
-    #                     },
-    #                 },
-    #                 {
-    #                     "type": "ragas",
-    #                     "metric": "RougeScore",
-    #                     "column_mapping": {
-    #                         "response":"answer",
-    #                         "reference":"context"
-    #                     },
-    #                 }
-    #             ],    
-    # }
+    # Run experiments.
+    experiment = {
+            "model" : {
+                    "type": "azure_openai",
+                    "api_key": "574499b10fea4553ad7a103db3065e4d", 
+                    "api_version": "2024-10-21", 
+                    "endpoint": "https://reteval4254999170.openai.azure.com",
+                    "inference_model_deployment": "gpt-4o",
+                    "embedding_model_deployment": "text-embedding-ada-002"
+            },
+            "prompt_template_id": "1ec94825-a035-4dfd-af13-254df2a40842",
+            "dataset_id": "7a1b627e-2d41-47c8-b257-8967b91d4714",
+            "evaluation": [
+                    {
+                        "type": "ragas",
+                        "metric": "SemanticSimilarity",
+                        "column_mapping": {
+                            "response":"answer",
+                            "reference":"context"
+                        },
+                    },
+                    {
+                        "type": "ragas",
+                        "metric": "RougeScore",
+                        "column_mapping": {
+                            "response":"answer",
+                            "reference":"context"
+                        },
+                    }
+                ],    
+    }
 
-    # prompt_trace.experiment.run(experiments, tracer_config=tracer)
+    # prompt_trace.experiment.run(experiment)
 
     # Start studio.
-    # prompt_trace.start_studio(8000)
+    prompt_trace.studio.start(8000)
 
     # # Deploy asset
-    # prompt_trace.deploy('59b02064-6b7a-4ca1-b290-67ba51809cf2', "C:\work")
+    # prompt = PromptTemplate (
+    #     id="1ec94825-a035-4dfd-af13-254df2a40842",
+    # )
+    # prompt_trace.asset.deploy(prompt, "C:\work")

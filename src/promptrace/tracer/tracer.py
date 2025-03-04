@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
-import sqlite3
 from typing import Dict, List
 
-from promptrace.config import ExperimentConfig
+from promptrace.config import ExperimentConfig, TracerConfig
 
 class Tracer(ABC):
-    def __init__(self, connection: sqlite3.Connection):
-        self.connection = connection
+    def __init__(self, tracer_config: TracerConfig):
+        pass
+
+    @abstractmethod
+    def init_db(self):
+        pass
 
     @abstractmethod
     def trace(self,experiment_config: ExperimentConfig, experiment_summary: List[Dict]):

@@ -1,7 +1,7 @@
 import click
 import json
 from promptrace.core import PrompTrace
-from promptrace.studio.server import StudioServer
+from promptrace.studio.studio import StudioServer
 
 @click.group()
 def cli():
