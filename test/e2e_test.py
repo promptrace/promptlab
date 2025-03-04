@@ -1,3 +1,4 @@
+import os
 from promptrace import PrompTrace
 from promptrace.types import Dataset, PromptTemplate
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     experiment = {
             "model" : {
                     "type": "azure_openai",
-                    "api_key": "574499b10fea4553ad7a103db3065e4d", 
+                    "api_key": os.environ["azure_openai_key"], 
                     "api_version": "2024-10-21", 
                     "endpoint": "https://reteval4254999170.openai.azure.com",
                     "inference_model_deployment": "gpt-4o",
