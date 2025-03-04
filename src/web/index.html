@@ -5,53 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Experiment Comparison</title>
     <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f7fa;
+            color: #2c3e50;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
             margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #edf2f7;
+            padding: 12px 15px;
             text-align: left;
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: #34495e;
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.9em;
         }
-        #compareBtn {
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        #compareBtn, #backBtn {
             margin: 20px 0;
-            padding: 10px 20px;
-            background-color: #4CAF50;
+            padding: 12px 24px;
+            background-color: #3498db;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
         }
+
+        #compareBtn:hover, #backBtn:hover {
+            background-color: #2980b9;
+        }
+
         #compareBtn:disabled {
-            background-color: #cccccc;
+            background-color: #bdc3c7;
             cursor: not-allowed;
         }
+
         #comparisonTable {
             display: none;
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
         }
-        #backBtn {
-            display: none;
-            margin: 20px 0;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+
         .evaluation-cell {
             max-width: 300px;
             overflow-wrap: break-word;
         }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3498db;
+        }
+
+        #experimentTable tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Comparison table specific styles */
+        #comparisonTable tr[data-alternate="true"] {
+            background-color: #edf2f7;
+        }
+
+        #comparisonTable tr[data-alternate="false"] {
+            background-color: white;
+        }
     </style>
 </head>
 <body>
+    <h1>PrompTrace</h1>
     <button id="compareBtn" disabled>Compare</button>
     <button id="backBtn">Back</button>
     <table id="experimentTable">
@@ -174,9 +221,29 @@
             const comparisonTableBody = document.getElementById('comparisonTableBody');
             comparisonTableBody.innerHTML = '';
 
+            // Sort data by dataset_record_id
+            data.sort((a, b) => {
+                // Extract numeric values from dataset_record_id
+                const numA = parseInt(a.dataset_record_id);
+                const numB = parseInt(b.dataset_record_id);
+                return numA - numB;
+            });
+
+            let currentRecordId = '';
+            let isAlternate = false;
+
             data.forEach(exp => {
                 const row = document.createElement('tr');
                 const evaluationData = JSON.parse(exp.evaluation);
+                
+                // Check if dataset_record_id has changed
+                if (currentRecordId !== exp.dataset_record_id) {
+                    isAlternate = !isAlternate;
+                    currentRecordId = exp.dataset_record_id;
+                }
+
+                // Add background color based on alternate records
+                row.style.backgroundColor = isAlternate ? '#7484a1' : '#ffffff';
                 
                 // Create a map of metric results
                 const metricResults = {};
