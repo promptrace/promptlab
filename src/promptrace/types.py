@@ -21,23 +21,20 @@ class EvaluationConfig(BaseModel):
     metric: str
     column_mapping: dict
 
+class AssetConfig(BaseModel):
+
+    id: str
+    version: int
+
 class ExperimentConfig(BaseModel):
 
     model: ModelConfig
-    prompt_template_id: str
-    dataset_id: str
+    prompt_template: AssetConfig
+    dataset: AssetConfig
     evaluation: List[EvaluationConfig]
 
     class Config:
         extra = "forbid" 
-
-    @field_validator('prompt_template_id')
-    def sanitize_prompt_template_path(cls, value):             
-        return Utils.sanitize_path(value)
-    
-    @field_validator('dataset_id')
-    def sanitize_dataset_path(cls, value):             
-        return Utils.sanitize_path(value)
     
 class TracerConfig(BaseModel):
 

@@ -1,6 +1,7 @@
 import json
 import os
-from typing import Dict, List
+import re
+from typing import Dict, List, Tuple
 
 class Utils:
 
@@ -29,3 +30,22 @@ class Utils:
             for line in file:
                 dataset.append(json.loads(line.strip()))
         return dataset
+    
+    @staticmethod
+    def split_prompt_template(asset) -> Tuple[str, str, List[str]]:
+        
+        pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'    
+        matches = re.findall(pattern, asset, re.DOTALL)
+        
+        if not matches:
+            raise ValueError("No valid prompt format found in template")
+            
+        system_prompt = matches[0][0].strip()
+        user_prompt = matches[0][1].strip()
+
+        system_prompt_varaibles = re.findall(r'<(.*?)>', system_prompt)
+        user_prompt_varaibles = re.findall(r'<(.*?)>', user_prompt)
+        prompt_template_variables = system_prompt_varaibles + user_prompt_varaibles
+        prompt_template_variables = list(set(prompt_template_variables))
+
+        return system_prompt, user_prompt, prompt_template_variables

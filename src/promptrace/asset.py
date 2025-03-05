@@ -8,6 +8,7 @@ from promptrace.enums import AssetType
 from promptrace.db.sql import SQLQuery
 from promptrace.tracer.tracer import Tracer
 from promptrace.types import Dataset, PromptTemplate
+from promptrace.utils import Utils
 
 T = TypeVar('T', Dataset, PromptTemplate)
 
@@ -41,7 +42,15 @@ class Asset:
 
         timestamp = datetime.now().isoformat()
         if dataset.id is not None:
-            pass
+            dataset_record = self.tracer.db_client.fetch_data(SQLQuery.SELECT_ASSET_QUERY, (dataset.id,))[0]
+
+            dataset.name = dataset_record['asset_name']
+            dataset.description = dataset_record['asset_description'] if dataset.description is None else dataset.description           
+            dataset.version = dataset_record['asset_version'] + 1
+
+            binary = dataset_record['asset_binary'] if dataset.file_path is None else {"file_path": dataset.file_path}
+
+            self.tracer.db_client.execute_query(SQLQuery.UPDATE_ASSET_QUERY, (dataset.description, binary, dataset.version, dataset.id))
         else:        
             dataset.id = str(uuid.uuid4())
             dataset.version = 1
@@ -50,7 +59,7 @@ class Asset:
                 "file_path": dataset.file_path
             }
 
-        self.tracer.db_client.execute_query(SQLQuery.INSERT_ASSETS_QUERY, (dataset.id, dataset.name, dataset.description, dataset.version, AssetType.DATASET.value, json.dumps(binary), timestamp))
+            self.tracer.db_client.execute_query(SQLQuery.INSERT_ASSETS_QUERY, (dataset.id, dataset.name, dataset.description, dataset.version, AssetType.DATASET.value, json.dumps(binary), timestamp))
 
         return dataset
     
@@ -59,7 +68,21 @@ class Asset:
         timestamp = datetime.now().isoformat()
 
         if template.id is not None:
-            pass
+            prompt_template = self.tracer.db_client.fetch_data(SQLQuery.SELECT_ASSET_QUERY, (template.id,))[0]
+            system_prompt, user_prompt, prompt_template_variables = Utils.split_prompt_template(prompt_template['asset_binary'])
+
+            template.name = prompt_template['asset_name']
+            template.description = prompt_template['asset_description'] if template.description is None else template.description
+            template.system_prompt = system_prompt if template.system_prompt is None else template.system_prompt
+            template.user_prompt = user_prompt if template.user_prompt is None else template.user_prompt
+            template.version = prompt_template['asset_version'] + 1
+            binary = f'''
+                <<system>>
+                    {template.system_prompt}
+                <<user>>
+                    {template.user_prompt}
+            '''
+            self.tracer.db_client.execute_query(SQLQuery.UPDATE_ASSET_QUERY, (template.description, binary, template.version, template.id))
         else:
             template.id = str(uuid.uuid4())
             template.version = 1
@@ -71,7 +94,8 @@ class Asset:
                     {template.user_prompt}
             '''
             
-        self.tracer.db_client.execute_query(SQLQuery.INSERT_ASSETS_QUERY, (template.id, template.name, template.description, template.version, AssetType.PROMPT_TEMPLATE.value,  binary, timestamp))
+            self.tracer.db_client.execute_query(SQLQuery.INSERT_ASSETS_QUERY, (template.id, template.name, template.description, template.version, AssetType.PROMPT_TEMPLATE.value,  binary, timestamp))
+            
         return template
     
     def deploy(self, asset: T, target_dir: str) -> T:

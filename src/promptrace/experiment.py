@@ -20,10 +20,10 @@ class Experiment:
         experiment_config = ExperimentConfig(**experiment_config)
         ConfigValidator.validate_experiment_config(experiment_config)
 
-        prompt_template = self.tracer.db_client.fetch_data(SQLQuery.SELECT_ASSET_QUERY, (experiment_config.prompt_template_id,))[0]
-        system_prompt, user_prompt, prompt_template_variables = self.split_prompt_template(prompt_template)
+        prompt_template = self.tracer.db_client.fetch_data(SQLQuery.SELECT_ASSET_QUERY, (experiment_config.prompt_template.id, experiment_config.prompt_template.version))[0]
+        system_prompt, user_prompt, prompt_template_variables = Utils.split_prompt_template(prompt_template['asset_binary'])
         
-        eval_dataset_path = self.tracer.db_client.fetch_data(SQLQuery.SELECT_DATASET_FILE_PATH_QUERY, (experiment_config.dataset_id,))[0]
+        eval_dataset_path = self.tracer.db_client.fetch_data(SQLQuery.SELECT_DATASET_FILE_PATH_QUERY, (experiment_config.dataset.id, experiment_config.dataset.version))[0]
         eval_dataset = Utils.load_dataset(eval_dataset_path['file_path'])
 
         exp_summary = self.init_batch_eval(eval_dataset, system_prompt, user_prompt, prompt_template_variables, experiment_config)
@@ -57,24 +57,6 @@ class Experiment:
             exp_summary.append(eval)
 
         return exp_summary
-    
-    def split_prompt_template(self, asset: Dict) -> Tuple[str, str, List[str]]:
-        
-        pattern = r'<<system>>\s*(.*?)\s*<<user>>\s*(.*?)\s*(?=<<|$)'    
-        matches = re.findall(pattern, asset['asset_binary'], re.DOTALL)
-        
-        if not matches:
-            raise ValueError("No valid prompt format found in template")
-            
-        system_prompt = matches[0][0].strip()
-        user_prompt = matches[0][1].strip()
-
-        system_prompt_varaibles = re.findall(r'<(.*?)>', system_prompt)
-        user_prompt_varaibles = re.findall(r'<(.*?)>', user_prompt)
-        prompt_template_variables = system_prompt_varaibles + user_prompt_varaibles
-        prompt_template_variables = list(set(prompt_template_variables))
-
-        return system_prompt, user_prompt, prompt_template_variables
 
     def evaluate(self, inference: str, row, experiment_config: ExperimentConfig) -> str:
 

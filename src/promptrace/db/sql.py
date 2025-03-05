@@ -87,33 +87,38 @@ class SQLQuery:
                                     asset_binary,
                                     created_at
                             FROM assets
-                            WHERE asset_id = ?'''
+                            WHERE asset_id = ? AND asset_version = ?'''
     
     SELECT_DATASET_FILE_PATH_QUERY = '''SELECT 
                                             json_extract(asset_binary, '$.file_path') AS file_path 
                                         FROM assets 
-                                        WHERE asset_id =  ?'''
+                                        WHERE asset_id =  ? AND asset_version = ?'''
 
     SELECT_EXPERIMENTS_QUERY = """
                                 SELECT
-                                e.experiment_id,
-                                json_extract(model, '$.type') AS model_type,
-                                json_extract(model, '$.api_version') AS model_api_version,
-                                json_extract(model, '$.endpoint') AS model_endpoint,
-                                json_extract(model, '$.inference_model_deployment') AS inference_model_deployment,
-                                json_extract(model, '$.embedding_model_deployment') AS embedding_model_deployment,
-                                json_extract(asset, '$.prompt_template_id') AS prompt_template_id,
-                                '' as system_prompt_template,
-                                '' as user_prompt_template,
-                                json_extract(asset, '$.dataset_id') AS dataset_id,
-                                er.dataset_record_id as dataset_record_id,
-                                er.inference as inference,
-                                er.prompt_tokens as prompt_tokens,
-                                er.completion_tokens as completion_tokens,
-                                er.latency_ms as latency_ms,
-                                er.evaluation as evaluation  
+                                    e.experiment_id,
+                                    json_extract(model, '$.type') AS model_type,
+                                    json_extract(model, '$.api_version') AS model_api_version,
+                                    json_extract(model, '$.endpoint') AS model_endpoint,
+                                    json_extract(model, '$.inference_model_deployment') AS inference_model_deployment,
+                                    json_extract(model, '$.embedding_model_deployment') AS embedding_model_deployment,
+                                    json_extract(asset, '$.prompt_template_id') AS prompt_template_id,
+                                    json_extract(asset, '$.prompt_template_version') AS prompt_template_version,
+                                    json_extract(asset, '$.dataset_id') AS dataset_id,
+                                    json_extract(asset, '$.dataset_version') AS dataset_version,
+                                    er.dataset_record_id as dataset_record_id,
+                                    er.inference as inference,
+                                    er.prompt_tokens as prompt_tokens,
+                                    er.completion_tokens as completion_tokens,
+                                    er.latency_ms as latency_ms,
+                                    er.evaluation as evaluation,
+                                    a.asset_binary
                                 FROM experiments e
-                                JOIN experiment_result er on e.experiment_id = er.experiment_id 
+                                JOIN experiment_result er on 
+                                    e.experiment_id = er.experiment_id 
+                                JOIN assets a ON
+                                    a.asset_id = prompt_template_id AND a.asset_version = prompt_template_version
                                 """
     
     UPDATE_EXPERIMENT_QUERY = '''UPDATE experiments SET is_deployed = 1, deployment_time = CURRENT_TIMESTAMP WHERE experiment_id = ?'''
+    UPDATE_ASSET_QUERY = '''UPDATE assets SET asset_description = ?, asset_binary = ?, asset_version = ?, created_at = CURRENT_TIMESTAMP WHERE asset_id = ?'''

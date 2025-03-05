@@ -33,8 +33,10 @@ class SQLiteTracer(Tracer):
         }
 
         asset = {
-            "prompt_template_id": experiment_config.prompt_template_id,
-            "dataset_id": experiment_config.dataset_id
+            "prompt_template_id": experiment_config.prompt_template.id,
+            "prompt_template_version": experiment_config.prompt_template.version,
+            "dataset_id": experiment_config.dataset.id,
+            "dataset_version": experiment_config.dataset.version
         }
 
         self.db_client.execute_query(SQLQuery.INSERT_EXPERIMENT_QUERY, (experiment_id, json.dumps(model), json.dumps(asset), 0, None, timestamp))

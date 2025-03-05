@@ -13,8 +13,8 @@ class ConfigValidator:
 
     @staticmethod
     def validate_experiment_config(experiment_config: ExperimentConfig):
-        validate_prompt_template_id(experiment_config.prompt_template_id)
-        validate_dataset_id(experiment_config.dataset_id)
+        validate_prompt_template_id(experiment_config.prompt_template.id)
+        validate_dataset_id(experiment_config.dataset.id)
 
 def validate_db_type(db_type: str) -> None:
 
