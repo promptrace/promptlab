@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 ],    
     }
 
-    prompt_trace.experiment.run(experiment)
+    # prompt_trace.experiment.run(experiment)
 
     # # Deploy asset
     # prompt = PromptTemplate (

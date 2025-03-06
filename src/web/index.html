@@ -201,6 +201,76 @@
         .deployed-row:hover {
             background-color: #c8e6c9 !important; /* Slightly darker green on hover */
         }
+
+        .column-filter {
+            margin: 20px 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .column-filter select {
+            min-width: 200px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .column-filter select[multiple] {
+            height: 150px;
+        }
+
+        .filter-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .column-filter {
+            position: relative;
+            width: 300px;
+            margin: 20px 0;
+        }
+
+        .column-filter-header {
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-filter-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .column-filter-option {
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .column-filter-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .column-filter.active .column-filter-dropdown {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -234,6 +304,15 @@
                 <h1>PrompTrace</h1>
                 <button id="compareBtn" disabled>Compare</button>
                 <button id="backBtn">Back</button>
+                <div id="filterContainer" class="filter-container">
+                    <div class="column-filter">
+                        <div class="column-filter-header">
+                            <span>Select columns to display</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="column-filter-dropdown"></div>
+                    </div>
+                </div>
                 <table id="experimentTable">
                     <thead>
                         <tr>
@@ -399,6 +478,7 @@
                     document.getElementById('comparisonTable').style.display = 'none';
                     document.getElementById('compareBtn').style.display = 'block';
                     document.getElementById('backBtn').style.display = 'none';
+                    document.getElementById('filterContainer').style.display = 'none'; // Add this line
                 });
 
             } catch (error) {
@@ -409,21 +489,17 @@
         function renderComparisonTable(data) {
             const comparisonTableBody = document.getElementById('comparisonTableBody');
             const comparisonTable = document.getElementById('comparisonTable');
+            const filterContainer = document.getElementById('filterContainer');
+            const columnFilterDropdown = document.querySelector('.column-filter-dropdown');
+            
+            // Show filter container
+            filterContainer.style.display = 'block';
             
             // Clear existing content
             comparisonTableBody.innerHTML = '';
+            columnFilterDropdown.innerHTML = '';
             
-            // Get all unique metric names from all experiments
-            const metricSet = new Set();
-            data.forEach(exp => {
-                const evaluationData = JSON.parse(exp.evaluation);
-                evaluationData.forEach(e => {
-                    metricSet.add(e.metric);
-                });
-            });
-            
-            // Create table header with fixed + dynamic columns
-            const headerRow = document.createElement('tr');
+            // Define fixed columns
             const fixedColumns = [
                 'Experiment ID',
                 'Dataset Record ID',
@@ -433,80 +509,152 @@
                 'Latency (ms)'
             ];
             
-            // Add fixed columns
-            fixedColumns.forEach(colName => {
-                const th = document.createElement('th');
-                th.textContent = colName;
-                headerRow.appendChild(th);
-            });
-            
-            // Add dynamic metric columns
-            metricSet.forEach(metric => {
-                const th = document.createElement('th');
-                th.textContent = metric;
-                headerRow.appendChild(th);
-            });
-            
-            // Replace existing header
-            const thead = comparisonTable.querySelector('thead');
-            thead.innerHTML = '';
-            thead.appendChild(headerRow);
-            
-            // Sort and render data rows
-            let currentRecordId = '';
-            let isAlternate = false;
-            
-            data.sort((a, b) => {
-                const numA = parseInt(a.dataset_record_id);
-                const numB = parseInt(b.dataset_record_id);
-                return numA - numB;
-            });
-            
+            // Get all unique metric names
+            const metricSet = new Set();
             data.forEach(exp => {
-                const row = document.createElement('tr');
                 const evaluationData = JSON.parse(exp.evaluation);
-                
-                // Check if dataset_record_id has changed
-                if (currentRecordId !== exp.dataset_record_id) {
-                    isAlternate = !isAlternate;
-                    currentRecordId = exp.dataset_record_id;
-                }
-                
-                // Set background color
-                row.dataset.alternate = isAlternate;
-                
-                // Create a map of metric results
-                const metricResults = {};
                 evaluationData.forEach(e => {
-                    metricResults[e.metric] = e.result.toFixed(4);
+                    metricSet.add(e.metric);
                 });
-                
-                // Add fixed columns data
-                const fixedData = [
-                    exp.experiment_id,
-                    exp.dataset_record_id,
-                    exp.inference,
-                    exp.completion_tokens,
-                    exp.prompt_tokens,
-                    exp.latency_ms.toFixed(2)
-                ];
-                
-                // Add fixed columns
-                fixedData.forEach(value => {
-                    const td = document.createElement('td');
-                    td.textContent = value;
-                    row.appendChild(td);
-                });
-                
-                // Add dynamic metric columns
-                metricSet.forEach(metric => {
-                    const td = document.createElement('td');
-                    td.textContent = metricResults[metric] || '-';
-                    row.appendChild(td);
-                });
-                
-                comparisonTableBody.appendChild(row);
             });
+            
+            // Create select all option
+            const selectAllDiv = document.createElement('div');
+            selectAllDiv.className = 'column-filter-option';
+            selectAllDiv.innerHTML = `
+                <input type="checkbox" id="selectAllColumns" checked>
+                <label for="selectAllColumns">Select All</label>
+            `;
+            columnFilterDropdown.appendChild(selectAllDiv);
+            
+            // Add all columns as options
+            const allColumns = [...fixedColumns, ...Array.from(metricSet)];
+            allColumns.forEach(column => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'column-filter-option';
+                optionDiv.innerHTML = `
+                    <input type="checkbox" id="${column}" value="${column}" checked>
+                    <label for="${column}">${column}</label>
+                `;
+                columnFilterDropdown.appendChild(optionDiv);
+            });
+            
+            // Remove any existing event listeners
+            const existingFilterHeader = document.querySelector('.column-filter-header');
+            if (existingFilterHeader) {
+                const newFilterHeader = existingFilterHeader.cloneNode(true);
+                existingFilterHeader.parentNode.replaceChild(newFilterHeader, existingFilterHeader);
+            }
+
+            // Toggle dropdown with improved click handling
+            const filterHeader = document.querySelector('.column-filter-header');
+            filterHeader.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up
+                document.querySelector('.column-filter').classList.toggle('active');
+            });
+
+            // Handle select all with improved event handling
+            const selectAllCheckbox = document.getElementById('selectAllColumns');
+            selectAllCheckbox.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up
+                const checkboxes = columnFilterDropdown.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = e.target.checked;
+                });
+                updateTable();
+            });
+
+            // Add change listeners to all checkboxes with improved event handling
+            columnFilterDropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    updateTable();
+                });
+            });
+
+            // Improve outside click handling
+            const outsideClickHandler = (e) => {
+                if (!e.target.closest('.column-filter')) {
+                    document.querySelector('.column-filter').classList.remove('active');
+                }
+            };
+
+            // Remove existing click listener and add new one
+            document.removeEventListener('click', outsideClickHandler);
+            document.addEventListener('click', outsideClickHandler);
+
+            function updateTable() {
+                const selectedColumns = Array.from(columnFilterDropdown.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(checkbox => checkbox.value)
+                    .filter(value => value !== 'selectAllColumns');
+                
+                // Update select all checkbox state
+                const allColumnsCheckboxes = columnFilterDropdown.querySelectorAll('input[type="checkbox"]:not(#selectAllColumns)');
+                selectAllCheckbox.checked = Array.from(allColumnsCheckboxes).every(checkbox => checkbox.checked);
+                
+                // Create table header
+                const headerRow = document.createElement('tr');
+                
+                // Only add selected columns to header
+                selectedColumns.forEach(colName => {
+                    const th = document.createElement('th');
+                    th.textContent = colName;
+                    headerRow.appendChild(th);
+                });
+                
+                // Replace existing header
+                const thead = comparisonTable.querySelector('thead');
+                thead.innerHTML = '';
+                thead.appendChild(headerRow);
+                
+                // Sort and render data rows
+                let currentRecordId = '';
+                let isAlternate = false;
+                comparisonTableBody.innerHTML = '';
+                
+                data.sort((a, b) => parseInt(a.dataset_record_id) - parseInt(b.dataset_record_id));
+                
+                data.forEach(exp => {
+                    const row = document.createElement('tr');
+                    const evaluationData = JSON.parse(exp.evaluation);
+                    
+                    if (currentRecordId !== exp.dataset_record_id) {
+                        isAlternate = !isAlternate;
+                        currentRecordId = exp.dataset_record_id;
+                    }
+                    
+                    row.dataset.alternate = isAlternate;
+                    
+                    // Create metrics map
+                    const metricResults = {};
+                    evaluationData.forEach(e => {
+                        metricResults[e.metric] = e.result.toFixed(4);
+                    });
+                    
+                    // Map of all possible values
+                    const allValues = {
+                        'Experiment ID': exp.experiment_id,
+                        'Dataset Record ID': exp.dataset_record_id,
+                        'Inference': exp.inference,
+                        'Completion Tokens': exp.completion_tokens,
+                        'Prompt Tokens': exp.prompt_tokens,
+                        'Latency (ms)': exp.latency_ms.toFixed(2),
+                        ...metricResults
+                    };
+                    
+                    // Add only selected columns in the same order as headers
+                    selectedColumns.forEach(colName => {
+                        const td = document.createElement('td');
+                        td.textContent = allValues[colName] || '-';
+                        row.appendChild(td);
+                    });
+                    
+                    comparisonTableBody.appendChild(row);
+                });
+            }
+            
+            // Initial table render
+            updateTable();
         }
 
         // Add this after the existing event listeners
