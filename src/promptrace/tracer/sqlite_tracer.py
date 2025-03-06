@@ -39,5 +39,5 @@ class SQLiteTracer(Tracer):
             "dataset_version": experiment_config.dataset.version
         }
 
-        self.db_client.execute_query(SQLQuery.INSERT_EXPERIMENT_QUERY, (experiment_id, json.dumps(model), json.dumps(asset), 0, None, timestamp))
+        self.db_client.execute_query(SQLQuery.INSERT_EXPERIMENT_QUERY, (experiment_id, json.dumps(model), json.dumps(asset), timestamp))
         self.db_client.execute_query_many(SQLQuery.INSERT_BATCH_EXPERIMENT_RESULT_QUERY, experiment_summary)

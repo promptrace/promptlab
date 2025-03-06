@@ -8,6 +8,8 @@ class SQLQuery:
                 asset_description TEXT,
                 asset_type TEXT,
                 asset_binary BLOB,
+                is_deployed BOOLEAN DEFAULT 0,
+                deployment_time TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         '''
@@ -17,8 +19,6 @@ class SQLQuery:
                         experiment_id TEXT PRIMARY KEY,
                         model BLOB,
                         asset BLOB,
-                        is_deployed BOOLEAN DEFAULT 0,
-                        deployment_time TIMESTAMP,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 '''
@@ -28,10 +28,8 @@ class SQLQuery:
                                     experiment_id,
                                     model,
                                     asset,
-                                    is_deployed,
-                                    deployment_time,
                                     created_at
-                            ) VALUES (?, ?, ?, ?, ?, ?)'''
+                            ) VALUES (?, ?, ?, ?)'''
     
     CREATE_EXPERIMENT_RESULT_TABLE_QUERY = '''
                     CREATE TABLE IF NOT EXISTS experiment_result (
@@ -89,6 +87,25 @@ class SQLQuery:
                             FROM assets
                             WHERE asset_id = ? AND asset_version = ?'''
     
+    SELECT_ASSET_BY_ID_QUERY = '''SELECT  asset_name, 
+                                    asset_description, 
+                                    asset_version, 
+                                    asset_type, 
+                                    asset_binary,
+                                    created_at
+                            FROM assets
+                            WHERE asset_id = ? AND asset_version = (SELECT MAX(asset_version) FROM assets WHERE asset_id = ?)'''
+    
+    SELECT_ASSET_BY_TYPE_QUERY = '''SELECT  asset_name, 
+                                    asset_description, 
+                                    asset_version, 
+                                    asset_type, 
+                                    asset_binary,
+                                    is_deployed,
+                                    deployment_time,
+                                    created_at
+                            FROM assets WHERE asset_type = ?'''
+    
     SELECT_DATASET_FILE_PATH_QUERY = '''SELECT 
                                             json_extract(asset_binary, '$.file_path') AS file_path 
                                         FROM assets 
@@ -120,5 +137,5 @@ class SQLQuery:
                                     a.asset_id = prompt_template_id AND a.asset_version = prompt_template_version
                                 """
     
-    UPDATE_EXPERIMENT_QUERY = '''UPDATE experiments SET is_deployed = 1, deployment_time = CURRENT_TIMESTAMP WHERE experiment_id = ?'''
+    DEPLOY_ASSET_QUERY = '''UPDATE assets SET is_deployed = 1, deployment_time = CURRENT_TIMESTAMP WHERE asset_id = ? and asset_version = ?'''
     UPDATE_ASSET_QUERY = '''UPDATE assets SET asset_description = ?, asset_binary = ?, asset_version = ?, created_at = CURRENT_TIMESTAMP WHERE asset_id = ?'''

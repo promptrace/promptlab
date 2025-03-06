@@ -12,51 +12,51 @@ if __name__ == "__main__":
   
     prompt_trace = PrompTrace(tracer)
 
-    # Create assets.
-    system_prompt = "You are a helpful assitant who can extract information from given text."
-    user_prompt = '''Here is some information. 
-                    <context>
+    # # Create assets.
+    # system_prompt = "You are a helpful assitant who can extract information from given text."
+    # user_prompt = '''Here is some information. 
+    #                 <context>
 
-                    Try answering this question.
-                    <question>'''
+    #                 Try answering this question.
+    #                 <question>'''
     
-    prompt = PromptTemplate (
-        name = "question-answering",
-        description = "A prompt that can be used for question answering",
-        system_prompt = system_prompt,
-        user_prompt = user_prompt,
-    )
+    # prompt = PromptTemplate (
+    #     name = "question-answering",
+    #     description = "A prompt that can be used for question answering",
+    #     system_prompt = system_prompt,
+    #     user_prompt = user_prompt,
+    # )
 
-    dataset = Dataset (
-        name = "qna_eval",
-        description = "qna eval dataset",
-        file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
-    )
+    # dataset = Dataset (
+    #     name = "qna_eval",
+    #     description = "qna eval dataset",
+    #     file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
+    # )
     
     # prompt_trace.asset.create_or_update(prompt)    
     # prompt_trace.asset.create_or_update(dataset)
 
-    system_prompt = "You are a helpful assitant who can extract information from given text."
-    user_prompt = '''Here is some information. 
-                    <context>
+    # system_prompt = "You are a helpful assitant who can extract information from given text."
+    # user_prompt = '''Here is some information. 
+    #                 <context>
 
-                    Try answering this question. Dont invent answers, only use the information provided.
-                    <question>'''
+    #                 Try answering this question. Dont invent answers, only use the information provided.
+    #                 <question>'''
     
-    prompt = PromptTemplate (
-        id="1ec94825-a035-4dfd-af13-254df2a40842-",
-        description = "A prompt that can be used for question answering without hallucination",
-        system_prompt = system_prompt,
-        user_prompt = user_prompt,
-    )
+    # prompt = PromptTemplate (
+    #     id="5f8d28a6-d61f-4154-9e85-60e49c0fd25a",
+    #     description = "A prompt that can be used for question answering without hallucination",
+    #     system_prompt = system_prompt,
+    #     user_prompt = user_prompt,
+    # )
     # prompt_trace.asset.create_or_update(prompt)    
 
-    dataset = Dataset (
-        id="7a1b627e-2d41-47c8-b257-8967b91d4714",
-        name = "qna_eval2",
-        description = "qna eval dataset updated",
-        file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
-    )
+    # dataset = Dataset (
+    #     id="fe5b1720-4c0d-43b7-9ee7-00317dd0b194",
+    #     name = "qna_eval2",
+    #     description = "qna eval dataset updated",
+    #     file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
+    # )
     # prompt_trace.asset.create_or_update(dataset)    
 
     # Run experiments.
@@ -70,11 +70,11 @@ if __name__ == "__main__":
                     "embedding_model_deployment": "text-embedding-ada-002"
             },
             "prompt_template": {
-                "id":"1ec94825-a035-4dfd-af13-254df2a40842",
-                "version": "2"
+                "id":"5f8d28a6-d61f-4154-9e85-60e49c0fd25a",
+                "version": "1"
             },
             "dataset": {
-                "id":"7a1b627e-2d41-47c8-b257-8967b91d4714",
+                "id":"fe5b1720-4c0d-43b7-9ee7-00317dd0b194",
                 "version": "1"
             },
             "evaluation": [
@@ -99,11 +99,13 @@ if __name__ == "__main__":
 
     prompt_trace.experiment.run(experiment)
 
+    # # Deploy asset
+    # prompt = PromptTemplate (
+    #     id="5f8d28a6-d61f-4154-9e85-60e49c0fd25a",
+    #     version=2    )
+    # prompt_trace.asset.deploy(prompt, "C:\work")
+
     # Start studio.
     prompt_trace.studio.start(8000)
 
-    # # Deploy asset
-    # prompt = PromptTemplate (
-    #     id="1ec94825-a035-4dfd-af13-254df2a40842",
-    # )
-    # prompt_trace.asset.deploy(prompt, "C:\work")
+

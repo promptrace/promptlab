@@ -95,48 +95,229 @@
         #comparisonTable tr[data-alternate="false"] {
             background-color: white;
         }
+
+        /* Add these styles after the existing styles */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .left-menu {
+            width: 200px;
+            background-color: #34495e;
+            padding: 20px 0;
+            color: white;
+        }
+
+        .left-menu ul {
+            list-style: none;
+            padding: 20px 0 0 0; /* Added top padding */
+            margin: 0;
+        }
+
+        .left-menu li {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .left-menu li:hover {
+            background-color: #2c3e50;
+        }
+
+        .left-menu li.active {
+            background-color: #2980b9;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #assetContent {
+            display: none;
+        }
+
+        /* Add these new styles before the closing style tag */
+        .container.nav-collapsed .left-menu {
+            width: 50px;
+            overflow: hidden;
+        }
+
+        .container.nav-collapsed .left-menu span {
+            display: none;
+        }
+
+        .nav-toggle {
+            position: absolute;
+            top: 10px; /* Changed from 20px to 10px */
+            left: 170px;
+            background: #2c3e50;
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.3s ease;
+        }
+
+        .container.nav-collapsed .nav-toggle {
+            left: 20px;
+        }
+
+        .left-menu {
+            position: relative;
+            transition: width 0.3s ease;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-icon {
+            font-size: 16px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        #promptTemplateContent {
+            display: none;
+        }
+
+        #datasetContent {
+            display: none;
+        }
+
+        .deployed-row {
+            background-color: #e8f5e9 !important; /* Light green background */
+        }
+        
+        .deployed-row:hover {
+            background-color: #c8e6c9 !important; /* Slightly darker green on hover */
+        }
     </style>
 </head>
 <body>
-    <h1>PrompTrace</h1>
-    <button id="compareBtn" disabled>Compare</button>
-    <button id="backBtn">Back</button>
-    <table id="experimentTable">
-        <thead>
-            <tr>
-                <th><input type="checkbox" id="selectAll"></th>
-                <th>Experiment ID</th>
-                <th>Model Type</th>
-                <th>Embedding Model</th>
-                <th>Inference Model</th>
-                <th>Prompt Template ID</th>
-                <th>Prompt Template Version</th>
-                <th>Dataset ID</th>
-                <th>Dataset Version</th>
-                <th>System Prompt</th>
-                <th>User Prompt</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div class="container">
+        <nav class="left-menu">
+            <button class="nav-toggle" title="Toggle menu">☰</button>
+            <ul>
+                <li class="active" data-content="experimentContent">
+                    <div class="menu-item">
+                        <i class="menu-icon">📊</i>
+                        <span>Experiment</span>
+                    </div>
+                </li>
+                <li data-content="promptTemplateContent">
+                    <div class="menu-item">
+                        <i class="menu-icon">📝</i>
+                        <span>Prompt Template</span>
+                    </div>
+                </li>
+                <li data-content="datasetContent">
+                    <div class="menu-item">
+                        <i class="menu-icon">📂</i>
+                        <span>Dataset</span>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        
+        <main class="content-area">
+            <div id="experimentContent">
+                <h1>PrompTrace</h1>
+                <button id="compareBtn" disabled>Compare</button>
+                <button id="backBtn">Back</button>
+                <table id="experimentTable">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>Experiment ID</th>
+                            <th>Model Type</th>
+                            <th>Embedding Model</th>
+                            <th>Inference Model</th>
+                            <th>Prompt Template ID</th>
+                            <th>Prompt Template Version</th>
+                            <th>Dataset ID</th>
+                            <th>Dataset Version</th>
+                            <th>System Prompt</th>
+                            <th>User Prompt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
 
-    <table id="comparisonTable">
-        <thead>
-            <tr>
-                <th>Experiment ID</th>
-                <th>Dataset Record ID</th>
-                <th>Inference</th>
-                <th>Completion Tokens</th>
-                <th>Prompt Tokens</th>
-                <th>Latency (ms)</th>
-                <th>ragas-SemanticSimilarity</th>
-                <th>ragas-RougeScore</th>
-            </tr>
-        </thead>
-        <tbody id="comparisonTableBody"></tbody>
-    </table>
+                <table id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>Experiment ID</th>
+                            <th>Dataset Record ID</th>
+                            <th>Inference</th>
+                            <th>Completion Tokens</th>
+                            <th>Prompt Tokens</th>
+                            <th>Latency (ms)</th>
+                            <th>ragas-SemanticSimilarity</th>
+                            <th>ragas-RougeScore</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="promptTemplateContent">
+                <h1>Prompt Templates</h1>
+                <table id="promptTemplateTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Version</th>
+                            <th>Created At</th>
+                            <th>System Prompt</th>
+                            <th>User Prompt</th>
+                            <th>Deployment Time</th>
+                            <th>Is Deployed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promptTemplateTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="assetContent">
+                <h1>Assets</h1>
+                <p>Asset management content will go here.</p>
+            </div>
+            
+            <div id="datasetContent">
+                <h1>Datasets</h1>
+                <table id="datasetTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Version</th>
+                            <th>Created At</th>
+                            <th>File Path</th>
+                        </tr>
+                    </thead>
+                    <tbody id="datasetTableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
     <script>
+        // Add this at the beginning of your script section
+        document.querySelector('.nav-toggle').addEventListener('click', () => {
+            document.querySelector('.container').classList.toggle('nav-collapsed');
+        });
+
         let experimentsData = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -271,6 +452,91 @@
                 `;
                 comparisonTableBody.appendChild(row);
             });
+        }
+
+        // Add this after the existing event listeners
+        document.querySelectorAll('.left-menu li').forEach(menuItem => {
+            menuItem.addEventListener('click', () => {
+                // Update active state
+                document.querySelectorAll('.left-menu li').forEach(item => {
+                    item.classList.remove('active');
+                });
+                menuItem.classList.add('active');
+
+                // Show/hide content
+                const contentId = menuItem.dataset.content;
+                document.querySelectorAll('.content-area > div').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(contentId).style.display = 'block';
+
+                if (contentId === 'promptTemplateContent') {
+                    loadPromptTemplates();
+                } else if (contentId === 'datasetContent') {
+                    loadDatasets();
+                }
+            });
+        });
+
+        async function loadPromptTemplates() {
+            try {
+                const response = await fetch('http://localhost:8001/prompttemplates');
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('promptTemplateTableBody');
+                tableBody.innerHTML = '';
+                
+                data.prompt_templates.forEach(template => {
+                    const row = document.createElement('tr');
+                    const createdAt = new Date(template.created_at).toLocaleString();
+                    const deploymentTime = template.deployment_time ? new Date(template.deployment_time).toLocaleString() : '-';
+                    
+                    // Add deployed-row class if template is deployed
+                    if (template.is_deployed) {
+                        row.classList.add('deployed-row');
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${template.asset_name}</td>
+                        <td>${template.asset_description}</td>
+                        <td>${template.asset_version}</td>
+                        <td>${createdAt}</td>
+                        <td class="evaluation-cell">${template.system_prompt_template}</td>
+                        <td class="evaluation-cell">${template.user_prompt_template}</td>
+                        <td>${deploymentTime}</td>
+                        <td>${template.is_deployed ? '✓' : '✗'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching prompt templates:', error);
+            }
+        }
+
+        async function loadDatasets() {
+            try {
+                const response = await fetch('http://localhost:8001/datasets');
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('datasetTableBody');
+                tableBody.innerHTML = '';
+                
+                data.datasets.forEach(dataset => {
+                    const row = document.createElement('tr');
+                    const createdAt = new Date(dataset.created_at).toLocaleString();
+                    
+                    row.innerHTML = `
+                        <td>${dataset.asset_name}</td>
+                        <td>${dataset.asset_description}</td>
+                        <td>${dataset.asset_version}</td>
+                        <td>${createdAt}</td>
+                        <td class="evaluation-cell">${dataset.file_path}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching datasets:', error);
+            }
         }
     </script>
 </body>
