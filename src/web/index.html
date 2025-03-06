@@ -408,19 +408,60 @@
 
         function renderComparisonTable(data) {
             const comparisonTableBody = document.getElementById('comparisonTableBody');
+            const comparisonTable = document.getElementById('comparisonTable');
+            
+            // Clear existing content
             comparisonTableBody.innerHTML = '';
-
-            // Sort data by dataset_record_id
+            
+            // Get all unique metric names from all experiments
+            const metricSet = new Set();
+            data.forEach(exp => {
+                const evaluationData = JSON.parse(exp.evaluation);
+                evaluationData.forEach(e => {
+                    metricSet.add(e.metric);
+                });
+            });
+            
+            // Create table header with fixed + dynamic columns
+            const headerRow = document.createElement('tr');
+            const fixedColumns = [
+                'Experiment ID',
+                'Dataset Record ID',
+                'Inference',
+                'Completion Tokens',
+                'Prompt Tokens',
+                'Latency (ms)'
+            ];
+            
+            // Add fixed columns
+            fixedColumns.forEach(colName => {
+                const th = document.createElement('th');
+                th.textContent = colName;
+                headerRow.appendChild(th);
+            });
+            
+            // Add dynamic metric columns
+            metricSet.forEach(metric => {
+                const th = document.createElement('th');
+                th.textContent = metric;
+                headerRow.appendChild(th);
+            });
+            
+            // Replace existing header
+            const thead = comparisonTable.querySelector('thead');
+            thead.innerHTML = '';
+            thead.appendChild(headerRow);
+            
+            // Sort and render data rows
+            let currentRecordId = '';
+            let isAlternate = false;
+            
             data.sort((a, b) => {
-                // Extract numeric values from dataset_record_id
                 const numA = parseInt(a.dataset_record_id);
                 const numB = parseInt(b.dataset_record_id);
                 return numA - numB;
             });
-
-            let currentRecordId = '';
-            let isAlternate = false;
-
+            
             data.forEach(exp => {
                 const row = document.createElement('tr');
                 const evaluationData = JSON.parse(exp.evaluation);
@@ -430,26 +471,40 @@
                     isAlternate = !isAlternate;
                     currentRecordId = exp.dataset_record_id;
                 }
-
-                // Add background color based on alternate records
-                row.style.backgroundColor = isAlternate ? '#7484a1' : '#ffffff';
+                
+                // Set background color
+                row.dataset.alternate = isAlternate;
                 
                 // Create a map of metric results
                 const metricResults = {};
                 evaluationData.forEach(e => {
                     metricResults[e.metric] = e.result.toFixed(4);
                 });
-
-                row.innerHTML = `
-                    <td>${exp.experiment_id}</td>
-                    <td>${exp.dataset_record_id}</td>
-                    <td>${exp.inference}</td>
-                    <td>${exp.completion_tokens}</td>
-                    <td>${exp.prompt_tokens}</td>
-                    <td>${exp.latency_ms.toFixed(2)}</td>
-                    <td>${metricResults['ragas-SemanticSimilarity'] || '-'}</td>
-                    <td>${metricResults['ragas-RougeScore'] || '-'}</td>
-                `;
+                
+                // Add fixed columns data
+                const fixedData = [
+                    exp.experiment_id,
+                    exp.dataset_record_id,
+                    exp.inference,
+                    exp.completion_tokens,
+                    exp.prompt_tokens,
+                    exp.latency_ms.toFixed(2)
+                ];
+                
+                // Add fixed columns
+                fixedData.forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    row.appendChild(td);
+                });
+                
+                // Add dynamic metric columns
+                metricSet.forEach(metric => {
+                    const td = document.createElement('td');
+                    td.textContent = metricResults[metric] || '-';
+                    row.appendChild(td);
+                });
+                
                 comparisonTableBody.appendChild(row);
             });
         }
