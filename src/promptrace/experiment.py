@@ -64,9 +64,11 @@ class Experiment:
         for eval in experiment_config.evaluation:
             evaluator = EvaluatorFactory.get_evaluator(eval.type, eval.metric, experiment_config.model)
             data = dict()
-            data["inference"] = inference
             for key, value in eval.column_mapping.items():
-                data[key] = row[value]
+                if value == "$inference":
+                    data[key] = inference
+                else:
+                    data[key] = row[value]
             evaluation_result = evaluator.evaluate(data)
             evaluations.append({
                 "metric": f'{eval.type}-{eval.metric}',

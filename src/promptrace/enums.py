@@ -17,7 +17,3 @@ class EvaluationMetric(Enum):
 
 class EvalLibrary(Enum):
     RAGAS = "ragas"
-
-class RagasMetric(Enum):
-    SemanticSimilarity = "SemanticSimilarity"
-    RougeScore = "RougeScore"

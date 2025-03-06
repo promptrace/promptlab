@@ -82,16 +82,18 @@ if __name__ == "__main__":
                         "type": "ragas",
                         "metric": "SemanticSimilarity",
                         "column_mapping": {
-                            "response":"answer",
-                            "reference":"context"
+                            "response":"$inference",
+                            "reference":"answer"
                         },
                     },
                     {
                         "type": "ragas",
-                        "metric": "RougeScore",
+                        "metric": "NoiseSensitivity",
                         "column_mapping": {
-                            "response":"answer",
-                            "reference":"context"
+                            "response":"$inference",
+                            "reference":"answer",
+                            "retrieved_contexts":"context",
+                            "user_input":"question",
                         },
                     }
                 ],    

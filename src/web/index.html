@@ -383,7 +383,7 @@
                     const filteredData = experimentsData.experiments.filter(exp => 
                         selectedExperiments.includes(exp.experiment_id)
                     );
-
+                    console.log('Selected experiments:', filteredData);
                     renderComparisonTable(filteredData);
                     
                     // Toggle visibility
@@ -480,7 +480,11 @@
 
         async function loadPromptTemplates() {
             try {
-                const response = await fetch('http://localhost:8001/prompttemplates');
+                const currentPort = window.location.port || '8000'; // default to 8000 if no port
+                const apiPort = parseInt(currentPort) + 1;
+                const apiUrl = `http://${window.location.hostname}:${apiPort}/prompttemplates`;
+
+                const response = await fetch(apiUrl);
                 const data = await response.json();
                 
                 const tableBody = document.getElementById('promptTemplateTableBody');
@@ -515,7 +519,11 @@
 
         async function loadDatasets() {
             try {
-                const response = await fetch('http://localhost:8001/datasets');
+                const currentPort = window.location.port || '8000'; // default to 8000 if no port
+                const apiPort = parseInt(currentPort) + 1;
+                const apiUrl = `http://${window.location.hostname}:${apiPort}/datasets`;
+
+                const response = await fetch(apiUrl);
                 const data = await response.json();
                 
                 const tableBody = document.getElementById('datasetTableBody');
