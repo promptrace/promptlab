@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import Dict, List
 import json
 
-from promptrace.config import ExperimentConfig, TracerConfig
-from promptrace.db.sqlite import SQLiteClient
-from promptrace.tracer.tracer import Tracer
-from promptrace.db.sql import SQLQuery
+from promptlab.config import ExperimentConfig, TracerConfig
+from promptlab.db.sqlite import SQLiteClient
+from promptlab.tracer.tracer import Tracer
+from promptlab.db.sql import SQLQuery
 
 class SQLiteTracer(Tracer):
     

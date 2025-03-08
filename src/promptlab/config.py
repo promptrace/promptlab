@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from promptrace.enums import TracerType
-from promptrace.types import ExperimentConfig, TracerConfig
+from promptlab.enums import TracerType
+from promptlab.types import ExperimentConfig, TracerConfig
 
 class ConfigValidator:
 

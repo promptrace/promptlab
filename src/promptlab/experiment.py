@@ -4,12 +4,12 @@ import json
 import re
 import uuid
 
-from promptrace.config import ConfigValidator, ExperimentConfig
-from promptrace.db.sql import SQLQuery
-from promptrace.model.model_factory import ModelFactory
-from promptrace.evaluator.evaluator_factory import EvaluatorFactory
-from promptrace.tracer.tracer import Tracer
-from promptrace.utils import Utils
+from promptlab.config import ConfigValidator, ExperimentConfig
+from promptlab.db.sql import SQLQuery
+from promptlab.model.model_factory import ModelFactory
+from promptlab.evaluator.evaluator_factory import EvaluatorFactory
+from promptlab.tracer.tracer import Tracer
+from promptlab.utils import Utils
 
 class Experiment:
     def __init__(self, tracer: Tracer):        

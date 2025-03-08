@@ -1,4 +1,4 @@
-from promptrace.evaluator.evaluator import Evaluator
+from promptlab.evaluator.evaluator import Evaluator
 
 class LengthEvaluator(Evaluator):
     

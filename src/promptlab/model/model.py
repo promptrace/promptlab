@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from promptrace.types import InferenceResult, ModelConfig
+from promptlab.types import InferenceResult, ModelConfig
 
 
 class Model(ABC):

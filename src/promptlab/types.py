@@ -3,8 +3,8 @@ from typing import List
 
 from pydantic import BaseModel, HttpUrl, field_validator
 
-from promptrace.enums import TracerType
-from promptrace.utils import Utils
+from promptlab.enums import TracerType
+from promptlab.utils import Utils
 
 class ModelConfig(BaseModel):
     

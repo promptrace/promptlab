@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
 
-from promptrace.config import ExperimentConfig, TracerConfig
+from promptlab.config import ExperimentConfig, TracerConfig
 
 class Tracer(ABC):
     def __init__(self, tracer_config: TracerConfig):

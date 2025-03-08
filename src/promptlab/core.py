@@ -1,10 +1,10 @@
-from promptrace.asset import Asset
-from promptrace.experiment import Experiment
-from promptrace.studio.studio import Studio
-from promptrace.tracer.tracer_factory import TracerFactory
-from promptrace.config import ConfigValidator, TracerConfig
+from promptlab.asset import Asset
+from promptlab.experiment import Experiment
+from promptlab.studio.studio import Studio
+from promptlab.tracer.tracer_factory import TracerFactory
+from promptlab.config import ConfigValidator, TracerConfig
 
-class PrompTrace:
+class PromptLab:
 
     def __init__(self, tracer_config: dict):
 

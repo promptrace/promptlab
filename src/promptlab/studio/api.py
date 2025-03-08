@@ -2,10 +2,10 @@ import json
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from promptrace.db.sql import SQLQuery
-from promptrace.types import TracerConfig
-from promptrace.utils import Utils
-from promptrace.enums import AssetType
+from promptlab.db.sql import SQLQuery
+from promptlab.types import TracerConfig
+from promptlab.utils import Utils
+from promptlab.enums import AssetType
 
 class StudioApi:
  

@@ -6,9 +6,9 @@ from ragas.llms import LangchainLLMWrapper
 from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAIEmbeddings
 
-from promptrace.enums import EvalLibrary
-from promptrace.evaluator.evaluator import Evaluator
-from promptrace.types import ModelConfig
+from promptlab.enums import EvalLibrary
+from promptlab.evaluator.evaluator import Evaluator
+from promptlab.types import ModelConfig
 
 class RagasMetricEval(Evaluator):
 

@@ -1,7 +1,7 @@
 from openai import OpenAI
 
-from promptrace.model.model import Model
-from promptrace.types import InferenceResult
+from promptlab.model.model import Model
+from promptlab.types import InferenceResult
 
 
 class DeepSeek(Model):

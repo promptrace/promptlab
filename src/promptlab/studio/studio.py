@@ -2,9 +2,9 @@ from http.server import HTTPServer
 from typing import Optional
 import threading
 
-from promptrace.config import TracerConfig
-from promptrace.studio.api import StudioApi
-from promptrace.studio.web import StudioWebHandler
+from promptlab.config import TracerConfig
+from promptlab.studio.api import StudioApi
+from promptlab.studio.web import StudioWebHandler
           
 class Studio:
 

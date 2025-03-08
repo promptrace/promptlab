@@ -4,11 +4,11 @@ import json
 import os
 import uuid
 
-from promptrace.enums import AssetType
-from promptrace.db.sql import SQLQuery
-from promptrace.tracer.tracer import Tracer
-from promptrace.types import Dataset, PromptTemplate
-from promptrace.utils import Utils
+from promptlab.enums import AssetType
+from promptlab.db.sql import SQLQuery
+from promptlab.tracer.tracer import Tracer
+from promptlab.types import Dataset, PromptTemplate
+from promptlab.utils import Utils
 
 T = TypeVar('T', Dataset, PromptTemplate)
 

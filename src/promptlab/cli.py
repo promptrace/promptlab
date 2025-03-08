@@ -1,7 +1,7 @@
 import click
 import json
-from promptrace.core import PrompTrace
-from promptrace.studio.studio import StudioServer
+from promptlab.core import PromptLab
+from promptlab.studio.studio import StudioServer
 
 @click.group()
 def cli():
@@ -27,7 +27,7 @@ def run(config, tracer):
             tracer_config = json.load(f)
             
         # Initialize and run
-        prompt_trace = PrompTrace(tracer_config)
+        prompt_trace = PromptLab(tracer_config)
         prompt_trace.run(experiment_config)
 
         click.echo("Experiment completed successfully")

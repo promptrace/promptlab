@@ -3,8 +3,8 @@
 </h4>
 
 ## Table of Contents
-- [PrompTrace](#promptrace)
-- [Why PrompTrace](#why-promptrace)
+- [PromptLab](#promptlab)
+- [Why PromptLab](#why-promptlab)
 - [Core Concepts](#core-concepts)
   - [Asset](#asset)
     - [Prompt Template](#prompt-template)
@@ -17,17 +17,17 @@
 - [Samples](#samples)
 - [CLI](#cli)
 
-## PrompTrace
+## PromptLab
 
-PrompTrace is a free, open-source library that simplifies building applications with LLMs by tackling some key challenges:  
+PromptLab is a free, open-source library that simplifies building applications with LLMs by tackling some key challenges:  
 
 - Designing experiments with any evaluation library  
 - Comparing experiments to identify the best prompt  
 - Deploying and tracking prompts in production
 
-## Why PrompTrace
+## Why PromptLab
 
-PrompTrace streamlines prompt engineering, making it easy to set up experiments, evaluate prompts, and track them in production.
+PromptLab streamlines prompt engineering, making it easy to set up experiments, evaluate prompts, and track them in production.
 
 Key Benefits:
 
@@ -39,7 +39,7 @@ Key Benefits:
 
 ## Core Concepts
 ### Asset
-Lifecycle of PrompTrace starts from assets. Assets are artefacts used to design experiments. Assets are immutable. Once created they can't be changed, any attempt to update will create a new version of the same asset. Versioning starts from 0 and automatically incremented. 
+Lifecycle of PromptLab starts from assets. Assets are artefacts used to design experiments. Assets are immutable. Once created they can't be changed, any attempt to update will create a new version of the same asset. Versioning starts from 0 and automatically incremented. 
 
 There are two types of assets.
 
@@ -58,17 +58,17 @@ A sample prompt template -
 Here, the `<context>` and `<question>` are placeholders which will be replaced by real information and question before sending to LLM.
 
 #### Dataset
-A dataset is a jsonl file which is used to run the evaluation. It's mandatory to have an unique `id` column. PrompTrace doesn't store the actual data, rather it only stores the metadata (file path, credentails etc.).
+A dataset is a jsonl file which is used to run the evaluation. It's mandatory to have an unique `id` column. PromptLab doesn't store the actual data, rather it only stores the metadata (file path, credentails etc.).
 
 ### Experiment
-Experiment is at the center of PrompTrace. An experiment means running a prompt for every record of the dataset and evaluating the outcome against some defined metrics. The dataset is provided as a jsonl file.
+Experiment is at the center of PromptLab. An experiment means running a prompt for every record of the dataset and evaluating the outcome against some defined metrics. The dataset is provided as a jsonl file.
 
 Parts of an expriment are:
 
 - Model: Configuration to connect to an LLM endpoint.
 - [Prompt Template](#prompt-template)
 - [Dataset](#dataset)
-- Evaluation: It is a list of evaluation metrics. PrompTrace supports and encourages to bring your own library for evaluation metrics.
+- Evaluation: It is a list of evaluation metrics. PromptLab supports and encourages to bring your own library for evaluation metrics.
 
 A sample experiment definition:
 
@@ -104,7 +104,7 @@ Tracer stores the experiment output to a SQLite database file.
 
 ## CLI
 
-PrompTrace cli reference [coming soon]
+PromptLab cli reference [coming soon]
 
 - ptrace experiment list
 - ptrace experiment run -config exp.json -type sqlite -db c:\projects\chat.db

@@ -203,31 +203,9 @@
         }
 
         .column-filter {
-            margin: 20px 0;
-            position: relative;
-            display: inline-block;
-        }
-
-        .column-filter select {
-            min-width: 200px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
-        .column-filter select[multiple] {
-            height: 150px;
-        }
-
-        .filter-container {
-            display: none;
-            margin-bottom: 20px;
-        }
-
-        .column-filter {
+            margin: 0; /* Remove margins */
             position: relative;
             width: 300px;
-            margin: 20px 0;
         }
 
         .column-filter-header {
@@ -271,6 +249,23 @@
         .column-filter.active .column-filter-dropdown {
             display: block;
         }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .filter-container {
+            display: none;
+            margin-bottom: 0; /* Remove bottom margin */
+        }
+
+        /* Update back button styles to work in the new layout */
+        #backBtn {
+            margin: 0; /* Remove margins */
+        }
     </style>
 </head>
 <body>
@@ -301,16 +296,20 @@
         
         <main class="content-area">
             <div id="experimentContent">
-                <h1>PrompTrace</h1>
-                <button id="compareBtn" disabled>Compare</button>
-                <button id="backBtn">Back</button>
-                <div id="filterContainer" class="filter-container">
-                    <div class="column-filter">
-                        <div class="column-filter-header">
-                            <span>Select columns to display</span>
-                            <span>▼</span>
+                <h1>PromptLab</h1>
+                <div class="action-bar">
+                    <div>
+                        <button id="compareBtn" disabled>Compare</button>
+                        <button id="backBtn">Back</button>
+                    </div>
+                    <div id="filterContainer" class="filter-container">
+                        <div class="column-filter">
+                            <div class="column-filter-header">
+                                <span>Select columns to display</span>
+                                <span>▼</span>
+                            </div>
+                            <div class="column-filter-dropdown"></div>
                         </div>
-                        <div class="column-filter-dropdown"></div>
                     </div>
                 </div>
                 <table id="experimentTable">

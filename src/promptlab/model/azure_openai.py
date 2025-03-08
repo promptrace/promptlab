@@ -1,7 +1,7 @@
 from openai import AzureOpenAI
 
-from promptrace.model.model import Model
-from promptrace.types import InferenceResult, ModelConfig
+from promptlab.model.model import Model
+from promptlab.types import InferenceResult, ModelConfig
 import time
 
 

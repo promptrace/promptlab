@@ -1,63 +1,63 @@
 import os
-from promptrace import PrompTrace
-from promptrace.types import Dataset, PromptTemplate
+from promptlab import PromptLab
+from promptlab.types import Dataset, PromptTemplate
 
 if __name__ == "__main__":
 
     # Create prompt trace object.
     tracer = {
         "type": "sqlite",
-        "db_file": "C:\work\promptrace\test\trace_target\promptrace.db"
+        "db_file": "C:\work\promptlab\test\trace_target\promptlab.db"
     }
   
-    prompt_trace = PrompTrace(tracer)
+    prompt_trace = PromptLab(tracer)
 
-    # # Create assets.
-    # system_prompt = "You are a helpful assitant who can extract information from given text."
-    # user_prompt = '''Here is some information. 
-    #                 <context>
+    # Create assets.
+    system_prompt = "You are a helpful assitant who can extract information from given text."
+    user_prompt = '''Here is some information. 
+                    <context>
 
-    #                 Try answering this question.
-    #                 <question>'''
+                    Try answering this question.
+                    <question>'''
     
     # prompt = PromptTemplate (
-    #     name = "question-answering",
+    #     name = "rag",
     #     description = "A prompt that can be used for question answering",
     #     system_prompt = system_prompt,
     #     user_prompt = user_prompt,
     # )
 
     # dataset = Dataset (
-    #     name = "qna_eval",
+    #     name = "ragdataset",
     #     description = "qna eval dataset",
-    #     file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
+    #     file_path = "C:\work\promptlab\test\dataset\qna.jsonl",
     # )
     
     # prompt_trace.asset.create_or_update(prompt)    
     # prompt_trace.asset.create_or_update(dataset)
 
-    # system_prompt = "You are a helpful assitant who can extract information from given text."
-    # user_prompt = '''Here is some information. 
-    #                 <context>
+    system_prompt = "You are a helpful assitant who can extract information from given text."
+    user_prompt = '''Here is some information. 
+                    <context>
 
-    #                 Try answering this question. Dont invent answers, only use the information provided.
-    #                 <question>'''
+                    Try answering this question. Dont invent answers, only use the information provided.
+                    <question>'''
     
-    # prompt = PromptTemplate (
-    #     id="5f8d28a6-d61f-4154-9e85-60e49c0fd25a",
-    #     description = "A prompt that can be used for question answering without hallucination",
-    #     system_prompt = system_prompt,
-    #     user_prompt = user_prompt,
-    # )
-    # prompt_trace.asset.create_or_update(prompt)    
+    prompt = PromptTemplate (
+        id="5f8d28a6-d61f-4154-9e85-60e49c0fd25a",
+        description = "A prompt that can be used for question answering without hallucination",
+        system_prompt = system_prompt,
+        user_prompt = user_prompt,
+    )
+    prompt_trace.asset.create_or_update(prompt)    
 
-    # dataset = Dataset (
-    #     id="fe5b1720-4c0d-43b7-9ee7-00317dd0b194",
-    #     name = "qna_eval2",
-    #     description = "qna eval dataset updated",
-    #     file_path = "C:\work\promptrace\test\dataset\qna.jsonl",
-    # )
-    # prompt_trace.asset.create_or_update(dataset)    
+    dataset = Dataset (
+        id="fe5b1720-4c0d-43b7-9ee7-00317dd0b194",
+        name = "qna_eval2",
+        description = "qna eval dataset updated",
+        file_path = "C:\work\promptlab\test\dataset\qna.jsonl",
+    )
+    prompt_trace.asset.create_or_update(dataset)    
 
     # Run experiments.
     experiment = {

@@ -1,8 +1,8 @@
-from promptrace.enums import ModelType
-from promptrace.model.azure_openai import AzOpenAI
-from promptrace.model.deepseek import DeepSeek
-from promptrace.model.model import Model
-from promptrace.types import ModelConfig
+from promptlab.enums import ModelType
+from promptlab.model.azure_openai import AzOpenAI
+from promptlab.model.deepseek import DeepSeek
+from promptlab.model.model import Model
+from promptlab.types import ModelConfig
 
 class ModelFactory:
 
