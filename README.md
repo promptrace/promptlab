@@ -1,5 +1,5 @@
 <h4 align="center">
-    <img alt="logo" src="src/img/banner.png" style="width: 100%;">
+    <img alt="logo" src="src/img/logo.png" style="">
 </h4>
 
 ## Table of Contents
@@ -19,11 +19,7 @@
 
 ## PromptLab
 
-PromptLab is a free, open-source library that simplifies building applications with LLMs by tackling some key challenges:  
-
-- Designing experiments with any evaluation library  
-- Comparing experiments to identify the best prompt  
-- Deploying and tracking prompts in production
+PromptLab is a free, lightweight, open-source evaluation platform for Gen AI applications. 
 
 ## Why PromptLab
 
@@ -115,4 +111,4 @@ PromptLab cli reference [coming soon]
 
 ## Samples
 
-[coming soon]
+- [Quickstart](./samples/quickstart/README.md)
