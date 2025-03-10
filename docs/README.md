@@ -5,13 +5,23 @@
 PromptLab is a free, lightweight, open-source evaluation platform for Gen AI applications. When we say `lightweight`, we truly mean lightweight - no cloud subscription, no additional servers, and even no docker. You are just one `pip install` away from evaluating your AI Agent or RAG application.
 
 ## Core Concepts
+
+### Tracer
+
+Tracer is storage that stores the assets and experiments. Currently only supported tracer is a `SQLite` based tracer. Initializing the PromptLab object will try to the load the SQLite database file. If the file doesn't exist, PromptLab will create the file.
+
+### PromptLab Studio
+
+PromptLab Studio is a web interface that shows the experiments and assets. It also helps to compare multiple expriments.
+
 ### Asset
+
 Lifecycle of PromptLab starts from assets. Assets are artefacts used to design experiments. Assets are immutable. Once created they can't be changed, any attempt to update will create a new version of the same asset. Versioning starts from 0 and automatically incremented. 
 
 There are two types of assets.
 
 #### Prompt Template
-A prompt template is a prompt with or without placeholders. The placeholders are replaced with actual data before sending to LLM. A prompt template has two parts - system prompt and user prompt. The placeholders are marked using `<PLACEHOLDER>`. 
+A prompt template is a prompt with or without placeholders. The placeholders are replaced with actual data before sending to LLM. A prompt template has two parts - system prompt and user prompt. The placeholders are marked using `< >`. 
 
 A sample prompt template -
 
@@ -22,7 +32,7 @@ A sample prompt template -
                     Answer this questions from the given information.
                     <question>'''
 
-Here, the `<context>` and `<question>` are placeholders which will be replaced by real information and question before sending to LLM.
+Here, `<context>` and `<question>` are placeholders that will be replaced with real data before sending to the LLM. PromptLab will search the dataset for columns with these exact names and use their values to replace the corresponding placeholders. Ensure that the dataset contains columns named `context` and `question` to avoid errors.
 
 #### Dataset
 A dataset is a jsonl file which is used to run the evaluation. It's mandatory to have an unique `id` column. PromptLab doesn't store the actual data, rather it only stores the metadata (file path, credentails etc.).
@@ -65,6 +75,4 @@ A sample experiment definition:
     }
 
 
-### Tracer
 
-Tracer stores the experiment output to a SQLite database file.

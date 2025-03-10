@@ -35,7 +35,7 @@ A  prompt template has two main attributes - `system_prompt` and `user_prompt`. 
 
 Here, `<context>` and `<question>` are placeholders that will be replaced with real data before sending to the LLM. PromptLab will search the dataset for columns with these exact names and use their values to replace the corresponding placeholders. Ensure that the dataset contains columns named `context` and `question` to avoid errors.
 
-You can check the 
+![PromptLab Studio](../../img/studio-pt.png)
 
 ## Create dataset
 
@@ -43,12 +43,20 @@ A dataset is a jsonl file to design the experiment. Please check [Prompt Templat
 
 The `def create_dataset(prompt_lab: PromptLab, file_path: str) -> str:` method demonstrates how to create a dataset.
 
+![PromptLab Studio](../../img/studio-ds.png)
+
 ## Create experiment
 
 An experiment evaluates the outcome of a prompt against a set of metrics for a given dataset. Developers can modify hyperparameters (such as prompt template and models) and compare experiment results to determine the best prompt for deployment in production. Please check [Experiment](../../docs/index.md#experiment) to learn more about it.
 
 In this quickstart example, we are using the prompt template and dataset created in the previous steps to create an experiment. The `def create_experiment(prompt_lab: PromptLab, endpoint:str, prompt_template_id: str, prompt_template_version: int, dataset_id: str, dataset_version: int):
 ` method demonstrates how to create and run an expriment.
+
+![PromptLab Studio](../../img/studio-home.png)
+
+You can compare multiple experiments.
+
+![PromptLab Studio](../../img/studio-exp-compare.png)
 
 ## Deploy prompt
 

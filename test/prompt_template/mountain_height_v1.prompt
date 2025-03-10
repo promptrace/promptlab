@@ -1,9 +1,0 @@
-<<system>>
-You are a helpful assitant who can extract information from given text.
-
-<<user>>
-Here is some information. 
-<context>
-
-Try answering this question.
-<question>

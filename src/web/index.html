@@ -353,6 +353,7 @@
                 <table id="promptTemplateTable">
                     <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Version</th>
@@ -377,6 +378,7 @@
                 <table id="datasetTable">
                     <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Version</th>
@@ -426,8 +428,8 @@
                         <td>${exp.prompt_template_version}</td>
                         <td>${exp.dataset_id}</td>
                         <td>${exp.dataset_version}</td>
-                        <td>${exp.system_prompt_template}</td>
-                        <td>${exp.user_prompt_template}</td>
+                        <td>${exp.system_prompt_template.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
+                        <td>${exp.user_prompt_template.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -703,12 +705,13 @@
                     }
                     
                     row.innerHTML = `
+                        <td>${template.asset_id}</td>
                         <td>${template.asset_name}</td>
                         <td>${template.asset_description}</td>
                         <td>${template.asset_version}</td>
                         <td>${createdAt}</td>
-                        <td class="evaluation-cell">${template.system_prompt_template}</td>
-                        <td class="evaluation-cell">${template.user_prompt_template}</td>
+                        <td class="evaluation-cell">${template.system_prompt_template.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
+                        <td class="evaluation-cell">${template.user_prompt_template.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
                         <td>${deploymentTime}</td>
                         <td>${template.is_deployed ? '✓' : '✗'}</td>
                     `;
@@ -736,6 +739,7 @@
                     const createdAt = new Date(dataset.created_at).toLocaleString();
                     
                     row.innerHTML = `
+                        <td>${dataset.asset_id}</td>
                         <td>${dataset.asset_name}</td>
                         <td>${dataset.asset_description}</td>
                         <td>${dataset.asset_version}</td>

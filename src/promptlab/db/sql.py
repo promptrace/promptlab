@@ -96,7 +96,8 @@ class SQLQuery:
                             FROM assets
                             WHERE asset_id = ? AND asset_version = (SELECT MAX(asset_version) FROM assets WHERE asset_id = ?)'''
     
-    SELECT_ASSET_BY_TYPE_QUERY = '''SELECT  asset_name, 
+    SELECT_ASSET_BY_TYPE_QUERY = '''SELECT  asset_id,
+                                    asset_name, 
                                     asset_description, 
                                     asset_version, 
                                     asset_type, 
