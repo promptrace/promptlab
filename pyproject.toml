@@ -21,12 +21,13 @@ dependencies = [
     "flask>=3.0.0",
     "flask-cors>=5.0.0",
     "click>=8.0.0",
+    "ragas>=0.2.0",
 ]
 requires-python = ">=3.8"
 
 [project.urls]
-Homepage = "https://github.com/promptrace/promptlab"
-Issues = "https://github.com/promptrace/promptlab/issues"
+Homepage = "https://github.com/imum-ai/promptlab"
+Issues = "https://github.com/imum-ai/promptlab/issues"
 
 [tool.setuptools.package-data]
 promptlab = ["web/*.html"]

@@ -2,7 +2,18 @@ import os
 from promptlab import PromptLab
 from promptlab.types import Dataset, PromptTemplate
 
-def create_prompt_template(prompt_lab: PromptLab):
+def create_prompt_lab(tracer_type: str, tracer_db_file_path: str) -> PromptLab:
+
+    tracer_config = {
+        "type": tracer_type,
+        "db_file": tracer_db_file_path
+    }
+  
+    prompt_lab = PromptLab(tracer_config)
+
+    return prompt_lab
+
+def create_prompt_template(prompt_lab: PromptLab) -> str:
 
     name = 'qna_prompt'
     description = 'A prompt designed to generate answers that are grounded in the provided information.'
@@ -20,13 +31,14 @@ def create_prompt_template(prompt_lab: PromptLab):
         user_prompt = user_prompt,
     )
 
-    prompt_lab.asset.create_or_update(prompt_template) 
+    prompt_template = prompt_lab.asset.create_or_update(prompt_template) 
 
-def create_dataset(prompt_lab: PromptLab):
+    return (prompt_template.id, prompt_template.version)
+
+def create_dataset(prompt_lab: PromptLab, file_path: str) -> str:
 
     name = "qna_eval_dataset"
-    description = "dataset for evaluating the qna prompt.",
-    file_path = "C:\work\promptlab\test\dataset\qna.jsonl",
+    description = "dataset for evaluating the qna prompt."
 
     dataset = Dataset (
         name = name,
@@ -34,26 +46,28 @@ def create_dataset(prompt_lab: PromptLab):
         file_path = file_path,
     )
 
-    prompt_lab.asset.create_or_update(dataset) 
+    dataset = prompt_lab.asset.create_or_update(dataset) 
 
-def create_experiment(prompt_lab: PromptLab):
+    return (dataset.id, dataset.version)
+
+def create_experiment(prompt_lab: PromptLab, endpoint:str, prompt_template_id: str, prompt_template_version: int, dataset_id: str, dataset_version: int):
 
     experiment = {
             "model" : {
                     "type": "azure_openai",
                     "api_key": os.environ["azure_openai_key"], 
-                    "api_version": "[Azure_Open_AI_API_Version]", 
-                    "endpoint": "https://[Azure_Open_AI_Service].openai.azure.com",
-                    "inference_model_deployment": "[Inference_Model_Deployment]",
-                    "embedding_model_deployment": "[Embedding_Model_Deployment]"
+                    "api_version": "2024-10-21", 
+                    "endpoint": endpoint,
+                    "inference_model_deployment": "gpt-4o",
+                    "embedding_model_deployment": "text-embedding-ada-002"
             },
             "prompt_template": {
-                "id":"[Prompt_Template_ID]",
-                "version": "[Version]"
+                "id": prompt_template_id,
+                "version": prompt_template_version
             },
             "dataset": {
-                "id":"[Prompt_Template_ID]",
-                "version": "[Version]"
+                "id": dataset_id,
+                "version": dataset_version
             },
             "evaluation": [
                     {
@@ -66,12 +80,10 @@ def create_experiment(prompt_lab: PromptLab):
                     },
                     {
                         "type": "ragas",
-                        "metric": "NoiseSensitivity",
+                        "metric": "NonLLMStringSimilarity",
                         "column_mapping": {
                             "response":"$inference",
                             "reference":"answer",
-                            "retrieved_contexts":"context",
-                            "user_input":"question",
                         },
                     }
                 ],    
@@ -79,33 +91,43 @@ def create_experiment(prompt_lab: PromptLab):
 
     prompt_lab.experiment.run(experiment)
 
-def deploy_prompt_template(prompt_lab: PromptLab):
+def deploy_prompt_template(prompt_lab: PromptLab, deployment_dir: str, prompt_template_id: str, prompt_template_version: int):
     
-    deployment_dir = "c:\prompts"
     prompt = PromptTemplate (
-        id='[Prompt_Template_Id]',
-        version= '[Prompt_Template_Version]',
+        id = prompt_template_id,
+        version = prompt_template_version,
         )
     
     prompt_lab.asset.deploy(prompt, deployment_dir)
 
 if __name__ == "__main__":
 
-    tracer_config = {
-        "type": "sqlite",
-        "db_file": "[DB_Dir]\promptlab.db"
-    }
-  
-    prompt_lab = PromptLab(tracer_config)
+    tracer_type = 'sqlite'
+    tracer_db_file_path = 'C:\work\promptlab\test\trace_target\promptlab.db'
+    eval_dataset_file_path = 'C:\work\promptlab\test\dataset\qna.jsonl'
+    aoai_endpoint = 'https://reteval4254999170.openai.azure.com'
+    deployment_dir = 'C:\work\prompt_templates'
 
-    create_prompt_template(prompt_lab)
+    # Create prompt_lab object which will be used to access different functionalities of the library.
+    prompt_lab = create_prompt_lab(tracer_type, tracer_db_file_path)
+
+    # Create a prompt template.
+    prompt_template_id, prompt_template_version = create_prompt_template(prompt_lab)
     
-    create_dataset(prompt_lab)
+    # Create a dataset.
+    dataset_id, dataset_version = create_dataset(prompt_lab, eval_dataset_file_path)
 
-    create_experiment(prompt_lab)
-
-    deploy_prompt_template(prompt_lab)
-
+    # Let's launch the studio and check the prompt template and dataset.
     prompt_lab.studio.start(8000)
+
+    # Create an experiment and run it.
+    create_experiment(prompt_lab, aoai_endpoint, prompt_template_id, prompt_template_version, dataset_id, dataset_version)
+
+    # Let's launch the studio again and check the experiment and its result.
+    prompt_lab.studio.start(8000)
+
+    # Let's deploy the prompt template to a directory in production.
+    deploy_prompt_template(prompt_lab, deployment_dir, prompt_template_id, prompt_template_version)
+
 
 

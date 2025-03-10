@@ -54,7 +54,7 @@ class Asset:
             self.tracer.db_client.execute_query(SQLQuery.INSERT_ASSETS_QUERY, (dataset.id, dataset.name, dataset.description, dataset.version, AssetType.DATASET.value, json.dumps(binary), timestamp))
         else:        
             dataset.id = str(uuid.uuid4())
-            dataset.version = 1
+            dataset.version = 0
 
             binary = {
                 "file_path": dataset.file_path
@@ -87,7 +87,7 @@ class Asset:
             self.tracer.db_client.execute_query(SQLQuery.INSERT_ASSETS_QUERY, (template.id, template.name, template.description, template.version, AssetType.PROMPT_TEMPLATE.value,  binary, timestamp))
         else:
             template.id = str(uuid.uuid4())
-            template.version = 1
+            template.version = 0
 
             binary = f'''
                 <<system>>
