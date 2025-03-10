@@ -111,14 +111,14 @@ if __name__ == "__main__":
     # Create prompt_lab object which will be used to access different functionalities of the library.
     prompt_lab = create_prompt_lab(tracer_type, tracer_db_file_path)
 
-    # # Create a prompt template.
-    # prompt_template_id, prompt_template_version = create_prompt_template(prompt_lab)
+    # Create a prompt template.
+    prompt_template_id, prompt_template_version = create_prompt_template(prompt_lab)
     
-    # # Create a dataset.
-    # dataset_id, dataset_version = create_dataset(prompt_lab, eval_dataset_file_path)
+    # Create a dataset.
+    dataset_id, dataset_version = create_dataset(prompt_lab, eval_dataset_file_path)
 
-    # # Let's launch the studio and check the prompt template and dataset.
-    # prompt_lab.studio.start(8000)
+    # Let's launch the studio and check the prompt template and dataset.
+    prompt_lab.studio.start(8000)
 
     # Create an experiment and run it.
     create_experiment(prompt_lab, aoai_endpoint, '0514a76e-f798-4fd1-932b-ff791fb347d0', 0, '4a7e977f-fbc3-4e6a-a033-226b2b8f121b', 0)
@@ -126,8 +126,8 @@ if __name__ == "__main__":
     # Let's launch the studio again and check the experiment and its result.
     prompt_lab.studio.start(8000)
 
-    # # Let's deploy the prompt template to a directory in production.
-    # deploy_prompt_template(prompt_lab, deployment_dir, prompt_template_id, prompt_template_version)
+    # Let's deploy the prompt template to a directory in production.
+    deploy_prompt_template(prompt_lab, deployment_dir, prompt_template_id, prompt_template_version)
 
 
 
